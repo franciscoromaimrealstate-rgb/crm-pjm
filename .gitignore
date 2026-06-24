@@ -1,0 +1,9 @@
+node_modules/
+.wwebjs_auth/
+.wwebjs_cache/
+pjm.db
+.env
+*.log
+*.db-shm
+*.db-wal
+credentials.json

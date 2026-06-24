@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PJM — Estado de mi Trámite</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#f5f7fa;min-height:100vh;color:#1a2640}
+.header{background:#0a1f3c;padding:18px 24px;display:flex;align-items:center;gap:12px}
+.header img{width:46px;background:#fff;border-radius:9px;padding:5px}
+.header h1{font-size:16px;color:#fff;font-weight:700}
+.header p{font-size:11px;color:rgba(192,200,216,.6);margin-top:1px}
+.main{max-width:640px;margin:0 auto;padding:36px 20px 60px}
+.card{background:#fff;border-radius:16px;padding:28px;box-shadow:0 2px 12px rgba(0,0,0,.06);margin-bottom:20px}
+.card h2{font-size:18px;font-weight:800;color:#0a1f3c;margin-bottom:6px}
+.card p{font-size:13px;color:#666;margin-bottom:16px}
+.folio-examples{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.folio-example{background:#f0f4ff;color:#0a1f3c;font-size:11px;padding:3px 10px;border-radius:6px;font-weight:600;font-family:monospace}
+.input-row{display:flex;gap:10px}
+.input-row input{flex:1;border:2px solid #dde2ea;border-radius:10px;padding:12px 16px;font-size:14px;font-family:monospace;font-weight:600;color:#1a2640;outline:none;transition:border-color .2s;text-transform:uppercase}
+.input-row input:focus{border-color:#0a1f3c}
+.btn-buscar{background:#0a1f3c;color:#fff;border:none;border-radius:10px;padding:12px 22px;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap;transition:background .2s}
+.btn-buscar:hover{background:#1a3a6e}
+.btn-buscar:disabled{opacity:.5}
+
+/* Ficha de operación */
+.op-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+.op-num{font-size:13px;color:#0a1f3c;background:#f0f4ff;border-radius:8px;padding:6px 14px;font-weight:800;font-family:monospace}
+.op-tipo{font-size:11px;font-weight:700}
+.op-tipo.poliza{background:#d1fae5;color:#065f46;border-radius:6px;padding:3px 8px}
+.op-tipo.contrato{background:#fef3c7;color:#92400e;border-radius:6px;padding:3px 8px}
+
+.folio-tree{margin-bottom:20px}
+.folio-tree-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#999;margin-bottom:12px}
+.folio-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.folio-chip{border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:3px}
+.folio-chip.primary{background:#0a1f3c;color:#fff}
+.folio-chip.secondary{background:#f0f4ff;color:#0a1f3c}
+.folio-chip.inactive{background:#f8f9fa;color:#aaa}
+.folio-chip .fc-label{font-size:10px;font-weight:600;opacity:.6;text-transform:uppercase;letter-spacing:.06em}
+.folio-chip .fc-val{font-size:13px;font-weight:800;font-family:monospace;letter-spacing:.02em}
+.folio-chip.primary .fc-label{opacity:.7;color:#c0c8d8}
+
+.status-banner{border-radius:12px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:12px}
+.status-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+.status-text h3{font-size:14px;font-weight:700}
+.status-text p{font-size:11px;opacity:.7;margin-top:2px}
+.st-nuevo{background:#dbeafe;color:#1d4ed8}.st-nuevo .status-dot{background:#3b82f6}
+.st-proceso{background:#fef3c7;color:#92400e}.st-proceso .status-dot{background:#f59e0b}
+.st-ganado{background:#d1fae5;color:#065f46}.st-ganado .status-dot{background:#10b981}
+.st-cancelado{background:#fee2e2;color:#991b1b}.st-cancelado .status-dot{background:#ef4444}
+
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.info-item label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#999}
+.info-item p{font-size:13px;font-weight:600;color:#1a2640;margin-top:3px}
+
+.timeline{border-left:2px solid #e5e9f0;padding-left:20px;margin-left:6px}
+.tl-item{position:relative;margin-bottom:18px}
+.tl-item::before{content:'';position:absolute;left:-26px;top:4px;width:10px;height:10px;border-radius:50%;background:#e5e9f0;border:2px solid #fff}
+.tl-item.done::before{background:#0a1f3c}
+.tl-item.current::before{background:#f59e0b;box-shadow:0 0 0 4px rgba(245,158,11,.2)}
+.tl-item h4{font-size:13px;font-weight:700;color:#0a1f3c}
+.tl-item p{font-size:11px;color:#666;margin-top:2px}
+
+.err-box{background:#fee2e2;border:1px solid #fca5a5;color:#dc2626;border-radius:10px;padding:14px;font-size:13px;display:none;margin-bottom:16px}
+.sec-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#999;margin:16px 0 10px}
+.footer{text-align:center;padding:32px;color:#999;font-size:12px}
+.footer a{color:#0a1f3c;text-decoration:none}
+@media(max-width:480px){.folio-grid{grid-template-columns:1fr}.info-grid{grid-template-columns:1fr}.input-row{flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="header">
+  <img src="/logo-pjm.png" alt="PJM">
+  <div>
+    <h1>Pólizas Jurídicas Monterrey</h1>
+    <p>Consulta el estado de tu operación</p>
+  </div>
+</div>
+
+<div class="main">
+  <div class="card">
+    <h2>Consultar por folio</h2>
+    <p>Ingresa <strong>cualquier folio</strong> de tu operación — póliza, arrendamiento, recibo, investigación, o solicitud.</p>
+    <div class="folio-examples">
+      <span class="folio-example">PJM-26-04-P031</span>
+      <span class="folio-example">PJM-26-04-A031</span>
+      <span class="folio-example">PJM-26-04-R031</span>
+      <span class="folio-example">SOL-001</span>
+    </div>
+    <div class="err-box" id="errBox"></div>
+    <div class="input-row">
+      <input type="text" id="folioInput" placeholder="Ej. PJM-26-04-P031" onkeydown="if(event.key==='Enter')buscar()">
+      <button class="btn-buscar" id="btnBuscar" onclick="buscar()">Consultar</button>
+    </div>
+  </div>
+
+  <div id="resultCard" style="display:none"></div>
+</div>
+
+<div class="footer">© 2024 <a href="/">Pólizas Jurídicas Monterrey</a></div>
+
+<script>
+const EXP_STEPS = [
+  { key: 'Nuevo',         label: 'Solicitud recibida',      desc: 'Operación registrada en el sistema.' },
+  { key: 'En Proceso',    label: 'En proceso',               desc: 'Tu expediente está siendo procesado.' },
+  { key: 'Investigación', label: 'Investigación en curso',  desc: 'Realizamos la investigación socioeconómica.' },
+  { key: 'Aprobado',      label: 'Aprobado',                 desc: 'El expediente fue aprobado.' },
+  { key: 'Firma',         label: 'Pendiente de firma',       desc: 'Firma de contrato pendiente.' },
+  { key: 'Activo',        label: 'Contrato activo',          desc: 'Tu contrato está vigente.' },
+];
+
+async function buscar() {
+  const folio = document.getElementById('folioInput').value.trim().toUpperCase();
+  if (!folio) return showErr('Ingresa un folio.');
+  clearErr();
+  const btn = document.getElementById('btnBuscar');
+  btn.disabled = true; btn.textContent = 'Buscando...';
+  try {
+    const res = await fetch(`/api/folios/${encodeURIComponent(folio)}`);
+    const data = await res.json();
+    if (!res.ok) { showErr('Folio no encontrado. Verifica con tu asesor.'); return; }
+    renderResult(data);
+  } catch { showErr('Error de conexión. Intenta de nuevo.'); }
+  finally { btn.disabled = false; btn.textContent = 'Consultar'; }
+}
+
+function showErr(msg) { const e = document.getElementById('errBox'); e.textContent = msg; e.style.display = 'block'; }
+function clearErr() { document.getElementById('errBox').style.display = 'none'; }
+
+function renderResult(data) {
+  const card = document.getElementById('resultCard');
+  card.style.display = 'block';
+  if (data.tipo === 'expediente') renderExpediente(card, data);
+  else renderSolicitud(card, data);
+  card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function statusClass(est) {
+  if (!est) return 'st-nuevo';
+  const e = est.toLowerCase();
+  if (e.includes('activo') || e.includes('ganado') || e.includes('aprobado')) return 'st-ganado';
+  if (e.includes('proceso') || e.includes('investigacion') || e.includes('investigación') || e.includes('firma')) return 'st-proceso';
+  if (e.includes('cancel') || e.includes('perdido')) return 'st-cancelado';
+  return 'st-nuevo';
+}
+
+function folioChip(label, val, isPrimary) {
+  const hasVal = val && val.trim();
+  const cls = hasVal ? (isPrimary ? 'primary' : 'secondary') : 'inactive';
+  return `<div class="folio-chip ${cls}">
+    <span class="fc-label">${label}</span>
+    <span class="fc-val">${hasVal || '—'}</span>
+  </div>`;
+}
+
+function renderExpediente(card, d) {
+  const sc = statusClass(d.estatus_general);
+  const steps = EXP_STEPS;
+  const curIdx = steps.findIndex(s => s.key === d.estatus_general);
+
+  card.innerHTML = `
+    <div class="card">
+      <div class="op-header">
+        <div>
+          <div style="font-size:11px;color:#999;margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:.06em">Operación</div>
+          <div style="font-size:28px;font-weight:900;color:#0a1f3c;font-family:monospace">${d.folio || '—'}</div>
+        </div>
+        <span class="op-tipo ${d.tipo_contratacion==='poliza'?'poliza':'contrato'}">${d.tipo_contratacion==='poliza'?'🛡️ Con Póliza':'📄 Contrato Simple'}</span>
+      </div>
+
+      <div class="status-banner ${sc}">
+        <div class="status-dot"></div>
+        <div class="status-text">
+          <h3>${d.estatus_general || 'Nuevo'}</h3>
+          <p>Estado actual · Actualizado: ${formatDate(d.updated_at)}</p>
+        </div>
+      </div>
+
+      <div class="folio-tree-title">Todos los folios de esta operación</div>
+      <div class="folio-grid">
+        ${folioChip('Póliza', d.folio_poliza, true)}
+        ${folioChip('Arrendamiento', d.folio_arrendamiento, true)}
+        ${folioChip('Recibo(s)', d.folio_recibo, false)}
+        ${folioChip('Investigación', d.folio_investigacion, false)}
+        ${folioChip('Opinión', d.folio_opinion, false)}
+        ${folioChip('Anexo', d.folio_anexo, false)}
+        ${folioChip('Devolución', d.folio_devolucion, false)}
+      </div>
+
+      ${(d.estatus_poliza || d.estatus_arrendamiento) ? `
+      <div class="info-grid" style="margin-top:16px">
+        ${d.estatus_poliza ? `<div class="info-item"><label>Estatus póliza</label><p>${d.estatus_poliza}</p></div>` : ''}
+        ${d.estatus_arrendamiento ? `<div class="info-item"><label>Estatus arrendamiento</label><p>${d.estatus_arrendamiento}</p></div>` : ''}
+      </div>` : ''}
+
+      <div class="info-grid">
+        <div class="info-item"><label>Asesor asignado</label><p>${d.asesor_nombre || 'Por asignar'}</p></div>
+        ${d.inicio_arrendamiento ? `<div class="info-item"><label>Inicio contrato</label><p>${d.inicio_arrendamiento}</p></div>` : ''}
+        ${d.fin_arrendamiento ? `<div class="info-item"><label>Fin contrato</label><p>${d.fin_arrendamiento}</p></div>` : ''}
+        ${d.monto_renta ? `<div class="info-item"><label>Renta mensual</label><p>$${d.monto_renta}</p></div>` : ''}
+        ${d.tipo_inmueble ? `<div class="info-item"><label>Tipo inmueble</label><p>${d.tipo_inmueble}</p></div>` : ''}
+        ${d.direccion_inmueble ? `<div class="info-item" style="grid-column:1/-1"><label>Inmueble</label><p>${d.direccion_inmueble}</p></div>` : ''}
+      </div>
+
+      <div class="sec-title">Progreso del trámite</div>
+      <div class="timeline">
+        ${steps.map((s, i) => {
+          const done = i < curIdx;
+          const current = i === curIdx;
+          return `<div class="tl-item ${done?'done':''} ${current?'current':''}">
+            <h4>${s.label}</h4>
+            <p>${s.desc}</p>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderSolicitud(card, d) {
+  const TIPOS = {arrendatario_pf:'Arrendatario (P. Física)',arrendatario_pm:'Arrendatario (P. Moral)',arrendador_pf:'Arrendador (P. Física)',arrendador_pm:'Arrendador (P. Moral)',os_fiador_pf:'Obligado Solidario (P. Física)',os_fiador_pm:'Obligado Solidario (P. Moral)'};
+  const ESTADOS = {Recibida:'st-nuevo',Revisión:'st-proceso',Completa:'st-ganado',Procesada:'st-ganado'};
+  const sc = ESTADOS[d.estado] || 'st-nuevo';
+  card.innerHTML = `
+    <div class="card">
+      <div style="font-size:11px;color:#999;margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:.06em">Solicitud</div>
+      <div style="font-size:24px;font-weight:900;color:#0a1f3c;font-family:monospace;margin-bottom:16px">${d.folio}</div>
+      <div class="status-banner ${sc}">
+        <div class="status-dot"></div>
+        <div class="status-text">
+          <h3>${d.estado || 'Recibida'}</h3>
+          <p>${TIPOS[d.tipo] || d.tipo} · ${formatDate(d.fecha)}</p>
+        </div>
+      </div>
+      <div class="info-grid">
+        <div class="info-item"><label>Nombre</label><p>${d.nombre || '—'}</p></div>
+        <div class="info-item"><label>Última actualización</label><p>${formatDate(d.updated_at)}</p></div>
+      </div>
+      <div style="background:#f0f4ff;border-radius:10px;padding:14px;font-size:13px;color:#0a1f3c;margin-top:8px">
+        Tu asesor revisará tu documentación y se pondrá en contacto contigo a la brevedad.
+      </div>
+    </div>
+  `;
+}
+
+function formatDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('es-MX', { year:'numeric', month:'long', day:'numeric' });
+}
+
+const params = new URLSearchParams(location.search);
+if (params.get('folio')) {
+  document.getElementById('folioInput').value = params.get('folio').toUpperCase();
+  buscar();
+}
+</script>
+</body>
+</html>

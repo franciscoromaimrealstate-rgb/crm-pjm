@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PJM — Portal de Clientes</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#f5f7fa;min-height:100vh;color:#1a2640}
+.header{background:#0a1f3c;padding:20px 24px;display:flex;align-items:center;gap:14px}
+.header img{width:52px;background:#fff;border-radius:10px;padding:6px}
+.header-text h1{font-size:18px;color:#fff;font-weight:700}
+.header-text p{font-size:12px;color:rgba(192,200,216,.6);margin-top:2px}
+.hero{background:linear-gradient(135deg,#0a1f3c 0%,#1a3a6e 100%);padding:48px 24px 56px;text-align:center;color:#fff}
+.hero h2{font-size:26px;font-weight:800;margin-bottom:10px}
+.hero p{font-size:15px;color:rgba(192,200,216,.8);max-width:480px;margin:0 auto 28px}
+.asesor-card{background:#fff;border-radius:16px;padding:20px 28px;display:inline-flex;align-items:center;gap:16px;box-shadow:0 4px 20px rgba(0,0,0,.15);min-width:280px}
+.asesor-avatar{width:52px;height:52px;border-radius:50%;background:#0a1f3c;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#c0c8d8;flex-shrink:0}
+.asesor-info h3{font-size:16px;font-weight:700;color:#0a1f3c}
+.asesor-info p{font-size:12px;color:#666;margin-top:2px}
+.asesor-folio{font-size:11px;color:#0a1f3c;background:#f0f4ff;border-radius:6px;padding:3px 8px;font-weight:600;margin-top:4px;display:inline-block}
+.main{max-width:760px;margin:0 auto;padding:40px 24px}
+.section-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#0a1f3c;margin-bottom:18px;opacity:.5}
+.forms-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-bottom:36px}
+.form-card{background:#fff;border:2px solid #e5e9f0;border-radius:14px;padding:20px;cursor:pointer;transition:all .2s;text-align:center;text-decoration:none;color:inherit}
+.form-card:hover{border-color:#0a1f3c;box-shadow:0 4px 20px rgba(10,31,60,.1);transform:translateY(-2px)}
+.form-icon{font-size:32px;margin-bottom:10px}
+.form-card h3{font-size:14px;font-weight:700;margin-bottom:4px;color:#0a1f3c}
+.form-card p{font-size:12px;color:#666;line-height:1.4}
+.tipo-badge{font-size:10px;border-radius:20px;padding:2px 8px;margin-top:8px;display:inline-block;font-weight:600}
+.tipo-pf{background:#dbeafe;color:#1d4ed8}
+.tipo-pm{background:#d1fae5;color:#065f46}
+.divider{border:none;border-top:1px solid #e5e9f0;margin:32px 0}
+.info-box{background:#fff;border-radius:14px;padding:24px;border:1px solid #e5e9f0}
+.info-box h3{font-size:15px;font-weight:700;margin-bottom:12px;color:#0a1f3c}
+.info-box p{font-size:13px;color:#555;line-height:1.6;margin-bottom:8px}
+.footer{text-align:center;padding:32px 24px;color:#999;font-size:12px}
+.footer a{color:#0a1f3c;text-decoration:none}
+.loading{text-align:center;padding:60px;color:#666}
+</style>
+</head>
+<body>
+<div class="header">
+  <img src="/logo-pjm.png" alt="PJM">
+  <div class="header-text">
+    <h1>Pólizas Jurídicas Monterrey</h1>
+    <p>Portal de Registro de Clientes</p>
+  </div>
+</div>
+
+<div class="hero">
+  <h2>Comienza tu trámite en línea</h2>
+  <p>Selecciona el formulario que corresponde a tu situación para enviar tu información de forma segura.</p>
+  <div class="asesor-card" id="asesorCard" style="display:none">
+    <div class="asesor-avatar" id="asesorAvatar"></div>
+    <div class="asesor-info">
+      <h3 id="asesorNombre">Cargando...</h3>
+      <p>Tu asesor asignado</p>
+      <span class="asesor-folio" id="asesorFolio"></span>
+    </div>
+  </div>
+</div>
+
+<div class="main" id="mainContent">
+  <div class="loading">Cargando información del asesor...</div>
+</div>
+
+<div class="footer">
+  © 2024 <a href="/">Pólizas Jurídicas Monterrey</a> · Todos los derechos reservados
+</div>
+
+<script>
+const token = location.pathname.split('/s/')[1];
+let asesorId = null;
+
+const FORMS = [
+  { tipo: 'arrendatario_pf', icon: '🏠', titulo: 'Arrendatario', sub: 'Persona Física', desc: 'Quien renta el inmueble (persona física)', badge: 'pf' },
+  { tipo: 'arrendatario_pm', icon: '🏢', titulo: 'Arrendatario', sub: 'Persona Moral', desc: 'Empresa que renta el inmueble', badge: 'pm' },
+  { tipo: 'arrendador_pf', icon: '🔑', titulo: 'Arrendador', sub: 'Persona Física', desc: 'Dueño del inmueble (persona física)', badge: 'pf' },
+  { tipo: 'arrendador_pm', icon: '🏗️', titulo: 'Arrendador', sub: 'Persona Moral', desc: 'Empresa dueña del inmueble', badge: 'pm' },
+  { tipo: 'os_fiador_pf', icon: '🤝', titulo: 'Obligado Solidario / Fiador', sub: 'Persona Física', desc: 'Aval o fiador (persona física)', badge: 'pf' },
+  { tipo: 'os_fiador_pm', icon: '🏦', titulo: 'Obligado Solidario / Fiador', sub: 'Persona Moral', desc: 'Empresa como aval o fiador', badge: 'pm' },
+];
+
+async function init() {
+  if (!token) {
+    renderError('Enlace inválido.');
+    return;
+  }
+
+  const res = await fetch(`/api/asesores/por-token/${token}`).catch(() => null);
+  if (!res || !res.ok) {
+    renderError('Enlace no encontrado. Verifica con tu asesor.');
+    return;
+  }
+  const asesor = await res.json();
+  asesorId = asesor.id;
+
+  document.getElementById('asesorCard').style.display = 'inline-flex';
+  document.getElementById('asesorNombre').textContent = asesor.nombre;
+  document.getElementById('asesorAvatar').textContent = asesor.nombre.charAt(0).toUpperCase();
+  document.getElementById('asesorFolio').textContent = asesor.folio || '';
+
+  renderForms();
+}
+
+function renderForms() {
+  const main = document.getElementById('mainContent');
+  main.innerHTML = `
+    <div class="section-title">Selecciona tu formulario</div>
+    <div class="forms-grid">
+      ${FORMS.map(f => `
+        <a class="form-card" href="/solicitud.html?tipo=${f.tipo}&token=${token}" >
+          <div class="form-icon">${f.icon}</div>
+          <h3>${f.titulo}</h3>
+          <p>${f.desc}</p>
+          <span class="tipo-badge tipo-${f.badge}">${f.sub}</span>
+        </a>
+      `).join('')}
+    </div>
+    <hr class="divider">
+    <div class="info-box">
+      <h3>¿Qué necesitas tener listo?</h3>
+      <p>📄 Identificación oficial vigente (INE/Pasaporte)</p>
+      <p>📋 RFC y CURP</p>
+      <p>🏠 Datos del inmueble a arrendar</p>
+      <p>📸 Fotografías del inmueble (si aplica)</p>
+      <p>💼 Documentos de la empresa (si eres persona moral)</p>
+    </div>
+  `;
+}
+
+function renderError(msg) {
+  document.getElementById('mainContent').innerHTML = `
+    <div style="text-align:center;padding:60px 20px;color:#dc2626">
+      <div style="font-size:48px;margin-bottom:16px">⚠️</div>
+      <h2 style="margin-bottom:8px">${msg}</h2>
+      <p style="color:#666;margin-top:8px">Contacta a tu asesor para obtener tu enlace correcto.</p>
+      <a href="/" style="display:inline-block;margin-top:20px;color:#0a1f3c;text-decoration:underline">← Ir a la página principal</a>
+    </div>
+  `;
+}
+
+init();
+</script>
+</body>
+</html>

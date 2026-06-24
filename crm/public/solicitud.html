@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PJM — Formulario de Registro</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#f5f7fa;min-height:100vh;color:#1a2640}
+.header{background:#0a1f3c;padding:16px 24px;display:flex;align-items:center;gap:12px}
+.header img{width:44px;background:#fff;border-radius:8px;padding:5px}
+.header h1{font-size:16px;color:#fff;font-weight:700}
+.header p{font-size:11px;color:rgba(192,200,216,.6);margin-top:1px}
+.container{max-width:680px;margin:0 auto;padding:32px 20px 60px}
+.progress-wrap{margin-bottom:28px}
+.progress-label{font-size:12px;color:#666;margin-bottom:8px;display:flex;justify-content:space-between}
+.progress-bar{height:6px;background:#e5e9f0;border-radius:10px;overflow:hidden}
+.progress-fill{height:100%;background:#0a1f3c;border-radius:10px;transition:width .4s ease}
+.card{background:#fff;border-radius:16px;padding:32px;box-shadow:0 2px 12px rgba(0,0,0,.06);margin-bottom:16px}
+.card-title{font-size:20px;font-weight:800;color:#0a1f3c;margin-bottom:4px}
+.card-sub{font-size:13px;color:#666;margin-bottom:24px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.fg{margin-bottom:16px}
+.fg label{display:block;font-size:11px;font-weight:700;color:#0a1f3c;margin-bottom:5px;text-transform:uppercase;letter-spacing:.06em;opacity:.6}
+.fg input,.fg select,.fg textarea{width:100%;border:1.5px solid #dde2ea;border-radius:8px;padding:11px 14px;font-size:14px;color:#1a2640;font-family:inherit;outline:none;transition:border-color .2s;background:#fff}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:#0a1f3c}
+.fg textarea{resize:vertical;min-height:80px}
+.fg .hint{font-size:11px;color:#999;margin-top:4px}
+.radio-group{display:flex;gap:10px;flex-wrap:wrap}
+.radio-btn{flex:1;min-width:120px;border:2px solid #dde2ea;border-radius:10px;padding:12px 16px;cursor:pointer;transition:all .2s;text-align:center}
+.radio-btn.active{border-color:#0a1f3c;background:#f0f4ff}
+.radio-btn input{display:none}
+.radio-btn span{font-size:13px;font-weight:600;color:#0a1f3c;display:block;margin-top:4px}
+.radio-btn .icon{font-size:22px}
+.photo-upload{border:2px dashed #dde2ea;border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:border-color .2s}
+.photo-upload:hover{border-color:#0a1f3c}
+.photo-upload input{display:none}
+.photos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;margin-top:12px}
+.photo-thumb{position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;background:#f0f4ff}
+.photo-thumb img{width:100%;height:100%;object-fit:cover}
+.photo-thumb .del{position:absolute;top:3px;right:3px;background:rgba(220,38,38,.9);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.inventario-item{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.inventario-item input{flex:1}
+.inventario-item button{background:none;border:1.5px solid #dde2ea;border-radius:6px;padding:6px 10px;cursor:pointer;color:#dc2626;font-size:16px}
+.btn-add-item{background:#f0f4ff;border:1.5px dashed #0a1f3c;border-radius:8px;padding:8px;color:#0a1f3c;font-size:13px;font-weight:600;cursor:pointer;width:100%;margin-top:4px}
+.nav-btns{display:flex;gap:12px;margin-top:24px}
+.btn-back{flex:0 0 auto;background:#f0f4ff;border:2px solid #dde2ea;border-radius:10px;padding:13px 22px;font-size:14px;font-weight:700;color:#0a1f3c;cursor:pointer;transition:all .2s}
+.btn-back:hover{border-color:#0a1f3c}
+.btn-next{flex:1;background:#0a1f3c;border:none;border-radius:10px;padding:14px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;transition:background .2s}
+.btn-next:hover{background:#1a3a6e}
+.btn-next:disabled{opacity:.5;cursor:not-allowed}
+.success{text-align:center;padding:48px 20px}
+.success .icon{font-size:64px;margin-bottom:16px}
+.success h2{font-size:24px;font-weight:800;color:#0a1f3c;margin-bottom:8px}
+.success p{color:#555;font-size:14px;line-height:1.6;margin-bottom:6px}
+.success .folio-badge{background:#0a1f3c;color:#fff;border-radius:12px;padding:10px 24px;font-size:18px;font-weight:800;display:inline-block;margin:16px 0}
+.err{background:#fee2e2;border:1px solid #fca5a5;color:#dc2626;border-radius:8px;padding:11px 14px;font-size:13px;margin-bottom:16px;display:none}
+section{display:none}
+section.active{display:block}
+.tipo-contrato-info{background:#f0f4ff;border-radius:10px;padding:14px;margin-bottom:16px;font-size:13px;color:#0a1f3c}
+.checklist{list-style:none}
+.checklist li{padding:6px 0;font-size:13px;color:#555;display:flex;align-items:center;gap:8px}
+.checklist li::before{content:'✓';color:#059669;font-weight:700}
+@media(max-width:500px){.row2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="header">
+  <img src="/logo-pjm.png" alt="PJM">
+  <div>
+    <h1>Pólizas Jurídicas Monterrey</h1>
+    <p id="headerSub">Formulario de registro</p>
+  </div>
+</div>
+
+<div class="container">
+  <div class="progress-wrap" id="progressWrap" style="display:none">
+    <div class="progress-label"><span id="stepLabel">Paso 1</span><span id="stepFraction">1 de 4</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:25%"></div></div>
+  </div>
+  <div class="err" id="errMsg"></div>
+
+  <!-- SECCIÓN 0: Datos generales del inmueble y contrato -->
+  <section id="s0" class="active">
+    <div class="card">
+      <div class="card-title" id="s0Title">Información del Trámite</div>
+      <div class="card-sub" id="s0Sub">Indica los datos básicos del contrato de arrendamiento</div>
+
+      <div class="fg">
+        <label>Tipo de contratación *</label>
+        <div class="radio-group" id="tipoContratacionGroup">
+          <label class="radio-btn active" onclick="selectRadio(this,'tipoContratacion','poliza')">
+            <input type="radio" name="tipoContratacion" value="poliza">
+            <div class="icon">🛡️</div><span>Con Póliza</span>
+          </label>
+          <label class="radio-btn" onclick="selectRadio(this,'tipoContratacion','contrato_simple')">
+            <input type="radio" name="tipoContratacion" value="contrato_simple">
+            <div class="icon">📄</div><span>Contrato Simple</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="row2">
+        <div class="fg">
+          <label>Tipo de inmueble *</label>
+          <select id="tipoInmueble">
+            <option value="">Selecciona...</option>
+            <option>Casa</option>
+            <option>Departamento</option>
+            <option>Local Comercial</option>
+            <option>Oficina</option>
+            <option>Bodega</option>
+            <option>Terreno</option>
+            <option>Otro</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Uso del inmueble *</label>
+          <select id="usoInmueble">
+            <option value="">Selecciona...</option>
+            <option>Habitacional</option>
+            <option>Comercial</option>
+            <option>Industrial</option>
+            <option>Mixto</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="fg">
+        <label>Dirección del inmueble *</label>
+        <input type="text" id="direccionInmueble" placeholder="Calle, número, colonia, municipio, CP">
+      </div>
+
+      <div class="fg">
+        <label>Monto de renta mensual (MXN) *</label>
+        <input type="text" id="montoRenta" placeholder="Ej. $8,500">
+      </div>
+
+      <div class="fg">
+        <label>¿El inmueble está amueblado o equipado?</label>
+        <div class="radio-group">
+          <label class="radio-btn" onclick="selectRadio(this,'amueblado','no');toggleAmueblado(false)">
+            <input type="radio" name="amueblado" value="no">
+            <div class="icon">🚪</div><span>Sin muebles</span>
+          </label>
+          <label class="radio-btn active" onclick="selectRadio(this,'amueblado','amueblado');toggleAmueblado(true)">
+            <input type="radio" name="amueblado" value="amueblado" checked>
+            <div class="icon">🛋️</div><span>Amueblado</span>
+          </label>
+          <label class="radio-btn" onclick="selectRadio(this,'amueblado','equipado');toggleAmueblado(true)">
+            <input type="radio" name="amueblado" value="equipado">
+            <div class="icon">⚙️</div><span>Equipado</span>
+          </label>
+          <label class="radio-btn" onclick="selectRadio(this,'amueblado','ambos');toggleAmueblado(true)">
+            <input type="radio" name="amueblado" value="ambos">
+            <div class="icon">✨</div><span>Ambos</span>
+          </label>
+        </div>
+      </div>
+
+      <div id="inventarioSection">
+        <div class="fg">
+          <label>Inventario de muebles/equipos (nombre, marca, condición)</label>
+          <div id="inventarioList"></div>
+          <button class="btn-add-item" onclick="addInventarioItem()">+ Agregar artículo</button>
+        </div>
+        <div class="fg">
+          <label>Fotografías del inventario</label>
+          <div class="photo-upload" onclick="document.getElementById('fotosInput').click()">
+            <div style="font-size:28px;margin-bottom:6px">📷</div>
+            <div style="font-size:13px;color:#666">Haz clic para subir fotos</div>
+            <div style="font-size:11px;color:#999;margin-top:4px">JPG, PNG — máx. 5MB por foto</div>
+            <input type="file" id="fotosInput" multiple accept="image/*" onchange="handleFotos(event)">
+          </div>
+          <div class="photos-grid" id="fotosGrid"></div>
+        </div>
+      </div>
+
+      <div class="fg">
+        <label>Formato de firma *</label>
+        <div class="radio-group">
+          <label class="radio-btn active" onclick="selectRadio(this,'formatoFirma','digital')">
+            <input type="radio" name="formatoFirma" value="digital">
+            <div class="icon">💻</div><span>Digital</span>
+          </label>
+          <label class="radio-btn" onclick="selectRadio(this,'formatoFirma','ratificacion')">
+            <input type="radio" name="formatoFirma" value="ratificacion">
+            <div class="icon">⚖️</div><span>Ratificación</span>
+          </label>
+          <label class="radio-btn" onclick="selectRadio(this,'formatoFirma','presencial')">
+            <input type="radio" name="formatoFirma" value="presencial">
+            <div class="icon">🖊️</div><span>Presencial</span>
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="nav-btns">
+      <button class="btn-next" onclick="goNext(0)">Continuar →</button>
+    </div>
+  </section>
+
+  <!-- SECCIÓN 1: Datos personales del solicitante -->
+  <section id="s1">
+    <div class="card">
+      <div class="card-title" id="s1Title">Tus Datos Personales</div>
+      <div class="card-sub" id="s1Sub">Información del solicitante principal</div>
+
+      <div class="row2">
+        <div class="fg">
+          <label>Nombre(s) *</label>
+          <input type="text" id="nombre" placeholder="Nombre(s)">
+        </div>
+        <div class="fg">
+          <label>Apellidos *</label>
+          <input type="text" id="apellidos" placeholder="Apellido paterno y materno">
+        </div>
+      </div>
+      <div class="row2">
+        <div class="fg">
+          <label>RFC *</label>
+          <input type="text" id="rfc" placeholder="XXXX000000XXX" maxlength="13" style="text-transform:uppercase">
+        </div>
+        <div class="fg">
+          <label>CURP</label>
+          <input type="text" id="curp" placeholder="XXXX000000XXXXXX00" maxlength="18" style="text-transform:uppercase">
+        </div>
+      </div>
+      <div class="row2">
+        <div class="fg">
+          <label>Teléfono celular *</label>
+          <input type="tel" id="telefono" placeholder="81 0000 0000">
+        </div>
+        <div class="fg">
+          <label>Correo electrónico *</label>
+          <input type="email" id="email" placeholder="tu@correo.com">
+        </div>
+      </div>
+      <div class="fg">
+        <label>Estado civil</label>
+        <select id="estadoCivil">
+          <option value="">Selecciona...</option>
+          <option>Soltero/a</option>
+          <option>Casado/a</option>
+          <option>Unión libre</option>
+          <option>Divorciado/a</option>
+          <option>Viudo/a</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Domicilio actual</label>
+        <input type="text" id="domicilioActual" placeholder="Calle, número, colonia, municipio">
+      </div>
+
+      <!-- Campos adicionales PM -->
+      <div id="campoPM" style="display:none">
+        <hr style="border:none;border-top:1px solid #f0f4ff;margin:16px 0">
+        <div style="font-size:12px;font-weight:700;color:#0a1f3c;text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px;opacity:.5">Datos de la empresa</div>
+        <div class="fg">
+          <label>Razón social *</label>
+          <input type="text" id="razonSocial" placeholder="Nombre oficial de la empresa">
+        </div>
+        <div class="row2">
+          <div class="fg">
+            <label>RFC Empresa *</label>
+            <input type="text" id="rfcEmpresa" placeholder="ABC000000XXX" style="text-transform:uppercase">
+          </div>
+          <div class="fg">
+            <label>Giro o actividad</label>
+            <input type="text" id="giroEmpresa" placeholder="Ej. Comercio al por menor">
+          </div>
+        </div>
+        <div class="fg">
+          <label>Nombre del representante legal *</label>
+          <input type="text" id="repLegal" placeholder="Nombre completo">
+        </div>
+        <div class="fg">
+          <label>Cargo del representante</label>
+          <input type="text" id="cargoRep" placeholder="Director General, Apoderado, etc.">
+        </div>
+      </div>
+    </div>
+    <div class="nav-btns">
+      <button class="btn-back" onclick="goBack(1)">← Atrás</button>
+      <button class="btn-next" onclick="goNext(1)">Continuar →</button>
+    </div>
+  </section>
+
+  <!-- SECCIÓN 2: Documentos -->
+  <section id="s2">
+    <div class="card">
+      <div class="card-title">Documentos Requeridos</div>
+      <div class="card-sub">Sube los documentos que se te solicitan</div>
+      <div id="docsList"></div>
+    </div>
+    <div class="nav-btns">
+      <button class="btn-back" onclick="goBack(2)">← Atrás</button>
+      <button class="btn-next" onclick="goNext(2)">Continuar →</button>
+    </div>
+  </section>
+
+  <!-- SECCIÓN 3: Partes adicionales y confirmación -->
+  <section id="s3">
+    <div class="card">
+      <div class="card-title">Confirmación</div>
+      <div class="card-sub">Revisa tus datos antes de enviar</div>
+      <div id="resumenDatos"></div>
+    </div>
+    <div id="habitanteSection" style="display:none">
+      <div class="card">
+        <div class="card-title" style="font-size:16px">Habitante no Arrendatario</div>
+        <div class="card-sub">Persona que vivirá en el inmueble pero no es arrendatario</div>
+        <div class="row2">
+          <div class="fg"><label>Nombre *</label><input type="text" id="habNombre" placeholder="Nombre completo"></div>
+          <div class="fg"><label>Parentesco</label><input type="text" id="habParentesco" placeholder="Ej. Cónyuge, Hijo/a"></div>
+        </div>
+        <div class="row2">
+          <div class="fg"><label>RFC</label><input type="text" id="habRfc" placeholder="XXXX000000XXX" style="text-transform:uppercase"></div>
+          <div class="fg"><label>CURP</label><input type="text" id="habCurp" placeholder="XXXX000000XXXXXX00" style="text-transform:uppercase"></div>
+        </div>
+      </div>
+    </div>
+    <div class="nav-btns">
+      <button class="btn-back" onclick="goBack(3)">← Atrás</button>
+      <button class="btn-next" id="btnEnviar" onclick="enviar()">✓ Enviar Solicitud</button>
+    </div>
+  </section>
+
+  <!-- ÉXITO -->
+  <section id="sSuccess">
+    <div class="success">
+      <div class="icon">✅</div>
+      <h2>¡Solicitud recibida!</h2>
+      <p>Tu información fue enviada exitosamente a tu asesor de Pólizas Jurídicas Monterrey.</p>
+      <p>Guarda tu folio de seguimiento:</p>
+      <div class="folio-badge" id="folioExito">SOL-000</div>
+      <p style="margin-top:8px">Puedes consultar el estatus de tu trámite en:</p>
+      <p><a id="linkMiExp" href="/mi-expediente" style="color:#0a1f3c;font-weight:700">/mi-expediente</a></p>
+      <br>
+      <a href="/" style="color:#666;font-size:13px">← Volver a la página principal</a>
+    </div>
+  </section>
+</div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const TIPO = params.get('tipo') || 'arrendatario_pf';
+const TOKEN = params.get('token') || '';
+const ES_PM = TIPO.endsWith('_pm');
+
+const TIPO_LABELS = {
+  arrendatario_pf: 'Arrendatario (Persona Física)',
+  arrendatario_pm: 'Arrendatario (Persona Moral)',
+  arrendador_pf:   'Arrendador (Persona Física)',
+  arrendador_pm:   'Arrendador (Persona Moral)',
+  os_fiador_pf:    'Obligado Solidario / Fiador (Persona Física)',
+  os_fiador_pm:    'Obligado Solidario / Fiador (Persona Moral)',
+};
+
+const DOCS_POR_TIPO = {
+  arrendatario_pf: ['INE / Identificación oficial (ambos lados)','Comprobante de domicilio (no mayor a 3 meses)','Comprobante de ingresos (últimos 3 recibos de nómina o estados de cuenta)','CURP'],
+  arrendatario_pm: ['Acta constitutiva y poder notarial','RFC empresa','Comprobante de domicilio fiscal','INE del representante legal','Comprobante de ingresos / estados de cuenta empresariales'],
+  arrendador_pf:   ['INE / Identificación oficial (ambos lados)','Comprobante de domicilio','Escrituras o título de propiedad del inmueble','RFC','Predial al corriente'],
+  arrendador_pm:   ['Acta constitutiva','RFC empresa','Escrituras o título de propiedad','INE del representante legal','Comprobante de domicilio fiscal'],
+  os_fiador_pf:    ['INE / Identificación oficial (ambos lados)','Comprobante de domicilio','Escrituras o título de propiedad a su nombre','Comprobante de ingresos'],
+  os_fiador_pm:    ['Acta constitutiva','RFC empresa','INE del representante legal','Escrituras o título de propiedad'],
+};
+
+let currentStep = 0;
+let fotos = [];
+let docsData = {};
+let inventario = [];
+
+function init() {
+  document.getElementById('headerSub').textContent = TIPO_LABELS[TIPO] || 'Formulario';
+  document.getElementById('s1Title').textContent = ES_PM ? 'Datos de la Empresa' : 'Tus Datos Personales';
+  if (ES_PM) document.getElementById('campoPM').style.display = 'block';
+
+  // Habitante solo para arrendatario
+  if (TIPO.startsWith('arrendatario')) {
+    document.getElementById('habitanteSection').style.display = 'block';
+  }
+
+  // Docs
+  const docs = DOCS_POR_TIPO[TIPO] || [];
+  const dl = document.getElementById('docsList');
+  dl.innerHTML = docs.map(d => `
+    <div class="fg">
+      <label>${d}</label>
+      <div class="photo-upload" onclick="this.querySelector('input').click()" style="padding:14px">
+        <input type="file" accept=".pdf,image/*" onchange="handleDoc(event,'${d.replace(/'/g,'')}')" style="display:none">
+        <div style="font-size:20px;margin-bottom:4px">📎</div>
+        <div style="font-size:12px;color:#666" id="docLabel_${slugify(d)}">Seleccionar archivo</div>
+      </div>
+    </div>
+  `).join('');
+
+  // Default inventario con algunos items
+  addInventarioItem('Refrigerador', 'Por especificar');
+  addInventarioItem('Estufa', 'Por especificar');
+  renderProgress();
+}
+
+function slugify(str) { return str.replace(/[^a-zA-Z0-9]/g,'_').substring(0,30); }
+
+function selectRadio(el, name, val) {
+  document.querySelectorAll(`[onclick*="'${name}'"]`).forEach(e => e.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function toggleAmueblado(show) {
+  document.getElementById('inventarioSection').style.display = show ? 'block' : 'none';
+}
+
+function addInventarioItem(nombre='', marca='') {
+  const div = document.createElement('div');
+  div.className = 'inventario-item';
+  div.innerHTML = `
+    <input type="text" placeholder="Artículo" value="${nombre}" style="flex:2">
+    <input type="text" placeholder="Marca / Condición" value="${marca}" style="flex:2">
+    <button onclick="this.parentElement.remove()">✕</button>
+  `;
+  document.getElementById('inventarioList').appendChild(div);
+}
+
+function handleFotos(e) {
+  const files = Array.from(e.target.files);
+  files.forEach(f => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      fotos.push({ nombre: f.name, datos: ev.target.result, tipo: f.type });
+      renderFotosGrid();
+    };
+    reader.readAsDataURL(f);
+  });
+}
+
+function renderFotosGrid() {
+  const g = document.getElementById('fotosGrid');
+  g.innerHTML = fotos.map((f,i) => `
+    <div class="photo-thumb">
+      <img src="${f.datos}" alt="${f.nombre}">
+      <button class="del" onclick="fotos.splice(${i},1);renderFotosGrid()">✕</button>
+    </div>
+  `).join('');
+}
+
+async function handleDoc(e, nombre) {
+  const f = e.target.files[0];
+  if (!f) return;
+  const id = `docLabel_${slugify(nombre)}`;
+  document.getElementById(id).textContent = `✓ ${f.name}`;
+  const reader = new FileReader();
+  reader.onload = ev => { docsData[nombre] = { nombre: f.name, datos: ev.target.result, tipo: f.type }; };
+  reader.readAsDataURL(f);
+}
+
+function renderProgress() {
+  const total = 4;
+  const pct = Math.round(((currentStep + 1) / total) * 100);
+  document.getElementById('progressWrap').style.display = currentStep > 0 ? 'block' : 'none';
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('stepLabel').textContent = `Paso ${currentStep + 1} de ${total}`;
+  document.getElementById('stepFraction').textContent = `${Math.round(pct)}% completado`;
+}
+
+function showErr(msg) {
+  const e = document.getElementById('errMsg');
+  e.textContent = msg; e.style.display = 'block';
+  window.scrollTo(0, 0);
+}
+function clearErr() { document.getElementById('errMsg').style.display = 'none'; }
+
+function goNext(step) {
+  clearErr();
+  if (step === 0) {
+    if (!document.getElementById('tipoInmueble').value) return showErr('Selecciona el tipo de inmueble.');
+    if (!document.getElementById('usoInmueble').value) return showErr('Selecciona el uso del inmueble.');
+    if (!document.getElementById('direccionInmueble').value.trim()) return showErr('Ingresa la dirección del inmueble.');
+    if (!document.getElementById('montoRenta').value.trim()) return showErr('Ingresa el monto de renta.');
+  }
+  if (step === 1) {
+    if (!document.getElementById('nombre').value.trim()) return showErr('Ingresa tu nombre.');
+    if (!document.getElementById('apellidos').value.trim()) return showErr('Ingresa tus apellidos.');
+    if (!document.getElementById('rfc').value.trim()) return showErr('Ingresa tu RFC.');
+    if (!document.getElementById('telefono').value.trim()) return showErr('Ingresa tu teléfono.');
+    if (!document.getElementById('email').value.trim()) return showErr('Ingresa tu correo electrónico.');
+    if (ES_PM && !document.getElementById('razonSocial').value.trim()) return showErr('Ingresa la razón social de la empresa.');
+  }
+  if (step === 2) {
+    renderResumen();
+  }
+  document.getElementById(`s${step}`).classList.remove('active');
+  currentStep = step + 1;
+  document.getElementById(`s${currentStep}`).classList.add('active');
+  renderProgress();
+  window.scrollTo(0, 0);
+}
+
+function goBack(step) {
+  clearErr();
+  document.getElementById(`s${step}`).classList.remove('active');
+  currentStep = step - 1;
+  document.getElementById(`s${currentStep}`).classList.add('active');
+  renderProgress();
+  window.scrollTo(0, 0);
+}
+
+function getRadioVal(name) {
+  const checked = document.querySelector(`input[name="${name}"]:checked`);
+  return checked ? checked.value : '';
+}
+
+function getInventario() {
+  const items = document.querySelectorAll('#inventarioList .inventario-item');
+  return Array.from(items).map(el => {
+    const inputs = el.querySelectorAll('input');
+    return { articulo: inputs[0].value, marcaCondicion: inputs[1].value };
+  }).filter(i => i.articulo);
+}
+
+function renderResumen() {
+  const nombre = document.getElementById('nombre').value + ' ' + document.getElementById('apellidos').value;
+  const html = `
+    <div class="tipo-contrato-info">
+      <strong>Tipo:</strong> ${TIPO_LABELS[TIPO]}<br>
+      <strong>Contratación:</strong> ${getRadioVal('tipoContratacion') === 'poliza' ? '🛡️ Con Póliza' : '📄 Contrato Simple'}<br>
+      <strong>Inmueble:</strong> ${document.getElementById('tipoInmueble').value} — ${document.getElementById('direccionInmueble').value}<br>
+      <strong>Renta:</strong> ${document.getElementById('montoRenta').value}<br>
+      <strong>Solicitante:</strong> ${nombre}<br>
+      <strong>RFC:</strong> ${document.getElementById('rfc').value}<br>
+      <strong>Email:</strong> ${document.getElementById('email').value}<br>
+      <strong>Teléfono:</strong> ${document.getElementById('telefono').value}
+    </div>
+    <ul class="checklist">
+      <li>Datos del inmueble registrados</li>
+      ${fotos.length ? `<li>${fotos.length} foto(s) del inventario adjunta(s)</li>` : ''}
+      ${Object.keys(docsData).length ? `<li>${Object.keys(docsData).length} documento(s) adjunto(s)</li>` : ''}
+    </ul>
+  `;
+  document.getElementById('resumenDatos').innerHTML = html;
+}
+
+async function enviar() {
+  clearErr();
+  const btn = document.getElementById('btnEnviar');
+  btn.disabled = true; btn.textContent = 'Enviando...';
+
+  const nombre = document.getElementById('nombre').value.trim();
+  const apellidos = document.getElementById('apellidos').value.trim();
+  const inventarioData = getInventario();
+
+  const datos = {
+    tipo_contratacion: getRadioVal('tipoContratacion') || 'poliza',
+    tipo_inmueble: document.getElementById('tipoInmueble').value,
+    uso_inmueble: document.getElementById('usoInmueble').value,
+    direccion_inmueble: document.getElementById('direccionInmueble').value,
+    monto_renta: document.getElementById('montoRenta').value,
+    amueblado: getRadioVal('amueblado'),
+    inventario: inventarioData,
+    formato_firma: getRadioVal('formatoFirma'),
+    nombre: nombre + ' ' + apellidos,
+    apellidos,
+    rfc: document.getElementById('rfc').value.toUpperCase(),
+    curp: document.getElementById('curp').value.toUpperCase(),
+    telefono: document.getElementById('telefono').value,
+    email: document.getElementById('email').value,
+    estado_civil: document.getElementById('estadoCivil').value,
+    domicilio_actual: document.getElementById('domicilioActual').value,
+    // PM
+    razon_social: document.getElementById('razonSocial')?.value || '',
+    rfc_empresa: document.getElementById('rfcEmpresa')?.value || '',
+    giro_empresa: document.getElementById('giroEmpresa')?.value || '',
+    rep_legal: document.getElementById('repLegal')?.value || '',
+    cargo_rep: document.getElementById('cargoRep')?.value || '',
+    // Habitante
+    habitante_nombre: document.getElementById('habNombre')?.value || '',
+    habitante_parentesco: document.getElementById('habParentesco')?.value || '',
+    habitante_rfc: document.getElementById('habRfc')?.value || '',
+    habitante_curp: document.getElementById('habCurp')?.value || '',
+    // Fotos y docs (base64)
+    fotos: fotos.map(f => ({ nombre: f.nombre, datos: f.datos, tipo: f.tipo })),
+    documentos: Object.entries(docsData).map(([k,v]) => ({ descripcion: k, nombre: v.nombre, datos: v.datos, tipo: v.tipo })),
+  };
+
+  try {
+    const res = await fetch('/api/solicitudes/publica', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ asesor_token: TOKEN, tipo: TIPO, datos })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Error al enviar');
+
+    document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+    document.getElementById('sSuccess').classList.add('active');
+    document.getElementById('folioExito').textContent = data.folio;
+    document.getElementById('linkMiExp').href = `/mi-expediente?folio=${data.folio}`;
+    document.getElementById('progressWrap').style.display = 'none';
+  } catch(e) {
+    showErr(e.message || 'Error al enviar. Intenta de nuevo.');
+    btn.disabled = false; btn.textContent = '✓ Enviar Solicitud';
+  }
+}
+
+init();
+</script>
+</body>
+</html>

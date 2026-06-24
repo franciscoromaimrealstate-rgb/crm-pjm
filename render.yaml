@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: pjm-crm
+    runtime: node
+    buildCommand: npm install
+    startCommand: node start-crm.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: GMAIL_PASS
+        sync: false
+    disk:
+      name: pjm-data
+      mountPath: /data
+      sizeGB: 1
