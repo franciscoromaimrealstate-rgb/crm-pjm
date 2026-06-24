@@ -194,6 +194,63 @@ CREATE TABLE IF NOT EXISTS lead_notas (
 );
 `);
 
+// ── Nuevas tablas de control ──
+db.exec(`
+CREATE TABLE IF NOT EXISTS incumplimientos (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  expediente_id INTEGER REFERENCES expedientes(id),
+  folio TEXT DEFAULT '',
+  tipo TEXT DEFAULT '',
+  estatus TEXT DEFAULT 'en_gestion',
+  resultado TEXT DEFAULT '',
+  asesor_id INTEGER REFERENCES usuarios(id),
+  asesor_nombre TEXT DEFAULT '',
+  nombre_arrendatario TEXT DEFAULT '',
+  notas TEXT DEFAULT '',
+  fecha_inicio TEXT DEFAULT '',
+  fecha_resolucion TEXT DEFAULT '',
+  fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS quejas (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  tipo_reclamante TEXT DEFAULT '',
+  nombre_reclamante TEXT DEFAULT '',
+  tipo TEXT DEFAULT '',
+  estatus TEXT DEFAULT 'abierta',
+  asesor_id INTEGER REFERENCES usuarios(id),
+  asesor_nombre TEXT DEFAULT '',
+  expediente_id INTEGER REFERENCES expedientes(id),
+  descripcion TEXT DEFAULT '',
+  resolucion TEXT DEFAULT '',
+  fecha_apertura TEXT DEFAULT '',
+  fecha_resolucion TEXT DEFAULT '',
+  fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS casos_juridicos (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  expediente_id INTEGER REFERENCES expedientes(id),
+  folio TEXT DEFAULT '',
+  tipo TEXT DEFAULT '',
+  estatus TEXT DEFAULT 'activo',
+  sentencia TEXT DEFAULT '',
+  monto_reclamado TEXT DEFAULT '',
+  monto_recuperado TEXT DEFAULT '',
+  asesor_id INTEGER REFERENCES usuarios(id),
+  asesor_nombre TEXT DEFAULT '',
+  nombre_arrendatario TEXT DEFAULT '',
+  juzgado TEXT DEFAULT '',
+  notas TEXT DEFAULT '',
+  fecha_inicio TEXT DEFAULT '',
+  fecha_resolucion TEXT DEFAULT '',
+  fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+`);
+
 // ── Migraciones: agregar columnas si no existen ──
 const migs = [
   // usuarios
@@ -225,6 +282,15 @@ const migs = [
   'ALTER TABLE expedientes ADD COLUMN workflow_etapa TEXT DEFAULT "nuevo"',
   'ALTER TABLE expedientes ADD COLUMN token_arrendatario TEXT',
   'ALTER TABLE expedientes ADD COLUMN token_arrendador TEXT',
+  // expedientes — cancelaciones / control financiero
+  'ALTER TABLE expedientes ADD COLUMN motivo_cancelacion TEXT DEFAULT ""',
+  'ALTER TABLE expedientes ADD COLUMN monto_retenido TEXT DEFAULT ""',
+  'ALTER TABLE expedientes ADD COLUMN pago_confirmado INTEGER DEFAULT 0',
+  'ALTER TABLE expedientes ADD COLUMN pago_confirmado_fecha TEXT DEFAULT ""',
+  'ALTER TABLE expedientes ADD COLUMN prorroga_automatica INTEGER DEFAULT 0',
+  'ALTER TABLE expedientes ADD COLUMN inconsistencias TEXT DEFAULT ""',
+  'ALTER TABLE expedientes ADD COLUMN descuento_aplicado TEXT DEFAULT ""',
+  'ALTER TABLE expedientes ADD COLUMN descuento_autorizo TEXT DEFAULT ""',
 ];
 for (const m of migs) { try { db.exec(m); } catch {} }
 

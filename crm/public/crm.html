@@ -280,6 +280,23 @@ tr:hover td{background:#f8fafc}
       <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
       <span>Asesores</span>
     </div>
+    <div class="nav-section admin-only"><span>Control</span></div>
+    <div class="nav-item admin-only" onclick="nav('cancelaciones')">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+      <span>Cancelaciones</span>
+    </div>
+    <div class="nav-item admin-only" onclick="nav('incumplimientos')">
+      <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <span>Incumplimientos</span>
+    </div>
+    <div class="nav-item admin-only" onclick="nav('quejas')">
+      <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <span>Quejas</span>
+    </div>
+    <div class="nav-item admin-only" onclick="nav('juridico')">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="11" y2="17"/></svg>
+      <span>Jurídico</span>
+    </div>
   </nav>
   <div class="sb-logout" onclick="logout()">
     <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -301,55 +318,141 @@ tr:hover td{background:#f8fafc}
 
     <!-- DASHBOARD -->
     <div id="page-dashboard" class="page active">
-      <!-- KPIs leads -->
-      <div class="kpi-grid" id="kpi-grid">
-        <div class="kpi-card"><div class="kpi-label">Total leads</div><div class="kpi-val" id="kpi-total">—</div><div class="kpi-sub" id="kpi-hoy">Cargando...</div></div>
-        <div class="kpi-card kpi-green"><div class="kpi-label">Ganados</div><div class="kpi-val" id="kpi-ganados">—</div><div class="kpi-sub" id="kpi-pct-cierre">—% cierre</div></div>
-        <div class="kpi-card kpi-red"><div class="kpi-label">Perdidos</div><div class="kpi-val" id="kpi-perdidos">—</div><div class="kpi-sub" id="kpi-pct-perdida">—% pérdida</div></div>
-        <div class="kpi-card kpi-amber"><div class="kpi-label">En proceso</div><div class="kpi-val" id="kpi-proceso">—</div><div class="kpi-sub">Requieren seguimiento</div></div>
-        <div class="kpi-card kpi-blue"><div class="kpi-label">Nuevos hoy</div><div class="kpi-val" id="kpi-nuevos-hoy">—</div><div class="kpi-sub" id="kpi-semana">— esta semana</div></div>
+      <!-- Tabs del dashboard -->
+      <div class="tabs" style="margin-bottom:16px">
+        <div class="tab active" onclick="dashTab('resumen',this)">Resumen</div>
+        <div class="tab" onclick="dashTab('tendencias',this)">Tendencias</div>
+        <div class="tab" onclick="dashTab('alertas',this)" id="dash-tab-alertas">Alertas <span id="alertas-badge" style="background:#dc2626;color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;margin-left:4px;display:none">0</span></div>
+        <div class="tab admin-only" onclick="dashTab('cartera',this)">Cartera</div>
+        <div class="tab admin-only" onclick="dashTab('ranking',this)">Ranking</div>
       </div>
-      <!-- KPIs financieros (admin) -->
-      <div class="kpi-grid admin-only" id="kpi-fin-grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));margin-bottom:20px">
-        <div class="kpi-card kpi-green"><div class="kpi-label">Ingresos totales</div><div class="kpi-val" id="kpi-ingresos" style="font-size:22px">—</div><div class="kpi-sub">Operaciones cerradas</div></div>
-        <div class="kpi-card kpi-amber"><div class="kpi-label">Comisiones pagadas</div><div class="kpi-val" id="kpi-comisiones" style="font-size:22px">—</div><div class="kpi-sub">A asesores</div></div>
-        <div class="kpi-card"><div class="kpi-label">Operaciones activas</div><div class="kpi-val" id="kpi-exp-activos">—</div><div class="kpi-sub">Pólizas vigentes</div></div>
-        <div class="kpi-card kpi-blue"><div class="kpi-label">Último cierre</div><div class="kpi-val" id="kpi-ultimo-cierre" style="font-size:13px;line-height:1.4">—</div></div>
-        <div class="kpi-card"><div class="kpi-label">Mes top</div><div class="kpi-val" id="kpi-mes-top" style="font-size:18px">—</div><div class="kpi-sub" id="kpi-tipo-top">—</div></div>
-      </div>
-      <!-- Mi dashboard (asesor) -->
-      <div class="kpi-grid" id="kpi-mi-grid" style="display:none;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:20px">
-        <div class="kpi-card kpi-green"><div class="kpi-label">Mis cierres</div><div class="kpi-val" id="mi-cierres">—</div></div>
-        <div class="kpi-card"><div class="kpi-label">Mis operaciones</div><div class="kpi-val" id="mi-ops">—</div></div>
-        <div class="kpi-card kpi-amber"><div class="kpi-label">Mis ingresos</div><div class="kpi-val" id="mi-ingresos" style="font-size:20px">—</div></div>
-        <div class="kpi-card kpi-blue"><div class="kpi-label">Mis comisiones</div><div class="kpi-val" id="mi-comisiones" style="font-size:20px">—</div></div>
-        <div class="kpi-card"><div class="kpi-label">Mejor mes</div><div class="kpi-val" id="mi-mejor-mes" style="font-size:18px">—</div></div>
-      </div>
-      <!-- Gráficas -->
-      <div class="section-row admin-only" style="margin-bottom:16px">
-        <div class="card" style="flex:1">
-          <div class="card-header"><div class="card-title">Cierres por mes (últimos 6 meses)</div></div>
-          <div style="padding:16px;height:200px"><canvas id="chart-cierres"></canvas></div>
+
+      <!-- ─── TAB: RESUMEN ─── -->
+      <div id="dtab-resumen">
+        <!-- KPIs leads acumulados -->
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8;margin-bottom:8px">Leads acumulados</div>
+        <div class="kpi-grid" style="margin-bottom:16px">
+          <div class="kpi-card"><div class="kpi-label">Total histórico</div><div class="kpi-val" id="kpi-total">—</div><div class="kpi-sub" id="kpi-hoy">—</div></div>
+          <div class="kpi-card kpi-green"><div class="kpi-label">Ganados total</div><div class="kpi-val" id="kpi-ganados">—</div><div class="kpi-sub" id="kpi-pct-cierre">—% cierre</div></div>
+          <div class="kpi-card kpi-red"><div class="kpi-label">Perdidos total</div><div class="kpi-val" id="kpi-perdidos">—</div><div class="kpi-sub" id="kpi-pct-perdida">—% pérdida</div></div>
+          <div class="kpi-card kpi-amber"><div class="kpi-label">En proceso</div><div class="kpi-val" id="kpi-proceso">—</div><div class="kpi-sub">Activos</div></div>
+          <div class="kpi-card kpi-blue"><div class="kpi-label">Este mes</div><div class="kpi-val" id="kpi-mes">—</div><div class="kpi-sub" id="kpi-mes-vs">vs mes anterior</div></div>
         </div>
-        <div class="card" style="flex:1">
-          <div class="card-header"><div class="card-title">Leads por mes</div></div>
-          <div style="padding:16px;height:200px"><canvas id="chart-leads"></canvas></div>
+
+        <!-- KPIs financieros acumulados (admin) -->
+        <div class="admin-only">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8;margin-bottom:8px">Financiero acumulado</div>
+          <div class="kpi-grid" style="margin-bottom:16px;grid-template-columns:repeat(auto-fit,minmax(160px,1fr))">
+            <div class="kpi-card kpi-green"><div class="kpi-label">Ingresos totales</div><div class="kpi-val" id="kpi-ingresos" style="font-size:20px">—</div><div class="kpi-sub">Histórico</div></div>
+            <div class="kpi-card kpi-amber"><div class="kpi-label">Comisiones pagadas</div><div class="kpi-val" id="kpi-comisiones" style="font-size:20px">—</div><div class="kpi-sub">A asesores</div></div>
+            <div class="kpi-card"><div class="kpi-label">Este mes ingresos</div><div class="kpi-val" id="kpi-ing-mes" style="font-size:18px">—</div><div class="kpi-sub" id="kpi-ing-mes-vs">vs anterior</div></div>
+            <div class="kpi-card"><div class="kpi-label">Cierres este mes</div><div class="kpi-val" id="kpi-cierres-mes">—</div><div class="kpi-sub" id="kpi-cierres-mes-vs">vs anterior</div></div>
+            <div class="kpi-card"><div class="kpi-label">Valor cartera activa</div><div class="kpi-val" id="kpi-cartera" style="font-size:18px">—</div><div class="kpi-sub">Rentas mensuales activas</div></div>
+            <div class="kpi-card"><div class="kpi-label">Tiempo prom. cierre</div><div class="kpi-val" id="kpi-tiempo-cierre" style="font-size:20px">—</div><div class="kpi-sub">días promedio</div></div>
+          </div>
+          <div class="kpi-grid" style="margin-bottom:16px;grid-template-columns:repeat(auto-fit,minmax(160px,1fr))">
+            <div class="kpi-card"><div class="kpi-label">Operaciones activas</div><div class="kpi-val" id="kpi-exp-activos">—</div><div class="kpi-sub">Pólizas vigentes</div></div>
+            <div class="kpi-card"><div class="kpi-label">Mes top histórico</div><div class="kpi-val" id="kpi-mes-top" style="font-size:16px">—</div><div class="kpi-sub" id="kpi-tipo-top">—</div></div>
+            <div class="kpi-card kpi-blue"><div class="kpi-label">Último cierre</div><div id="kpi-ultimo-cierre" style="font-size:12px;line-height:1.6;margin-top:6px">—</div></div>
+          </div>
         </div>
-      </div>
-      <div class="section-row">
-        <!-- Ranking asesores -->
-        <div class="card admin-only" style="flex:1.5">
-          <div class="card-header"><div class="card-title">Ranking de asesores</div></div>
-          <div class="table-wrap"><table>
-            <thead><tr><th>#</th><th>Asesor</th><th>Cierres</th><th>Operaciones</th><th>Ingresos</th><th>Comisiones</th></tr></thead>
-            <tbody id="ranking-asesores"></tbody>
-          </table></div>
+
+        <!-- Mi dashboard (asesor) -->
+        <div id="kpi-mi-grid" style="display:none">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8;margin-bottom:8px">Mi rendimiento</div>
+          <div class="kpi-grid" style="margin-bottom:16px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
+            <div class="kpi-card kpi-green"><div class="kpi-label">Mis cierres</div><div class="kpi-val" id="mi-cierres">—</div><div class="kpi-sub" id="mi-cierres-mes">— este mes</div></div>
+            <div class="kpi-card"><div class="kpi-label">Mis operaciones</div><div class="kpi-val" id="mi-ops">—</div></div>
+            <div class="kpi-card kpi-amber"><div class="kpi-label">Mis ingresos</div><div class="kpi-val" id="mi-ingresos" style="font-size:18px">—</div></div>
+            <div class="kpi-card kpi-blue"><div class="kpi-label">Mis comisiones</div><div class="kpi-val" id="mi-comisiones" style="font-size:18px">—</div></div>
+            <div class="kpi-card"><div class="kpi-label">Mejor mes</div><div class="kpi-val" id="mi-mejor-mes" style="font-size:16px">—</div></div>
+          </div>
         </div>
-        <div class="card" style="flex:1">
+
+        <!-- Leads recientes -->
+        <div class="card">
           <div class="card-header"><div class="card-title">Leads recientes</div></div>
           <div style="padding:0 18px" class="lead-list-mini" id="leads-recientes"></div>
         </div>
       </div>
+
+      <!-- ─── TAB: TENDENCIAS ─── -->
+      <div id="dtab-tendencias" style="display:none">
+        <div class="section-row" style="margin-bottom:16px">
+          <div class="card" style="flex:1">
+            <div class="card-header">
+              <div class="card-title">Ingresos mensuales</div>
+              <div style="font-size:11px;color:#94a3b8" id="chart-ing-total-label">acumulado histórico</div>
+            </div>
+            <div style="padding:16px;height:240px"><canvas id="chart-ingresos"></canvas></div>
+          </div>
+          <div class="card" style="flex:1">
+            <div class="card-header"><div class="card-title">Leads por mes (acumulado)</div></div>
+            <div style="padding:16px;height:240px"><canvas id="chart-leads"></canvas></div>
+          </div>
+        </div>
+        <div class="section-row" style="margin-bottom:16px">
+          <div class="card" style="flex:1">
+            <div class="card-header"><div class="card-title">Cierres por mes</div></div>
+            <div style="padding:16px;height:200px"><canvas id="chart-cierres"></canvas></div>
+          </div>
+          <div class="card admin-only" style="flex:1">
+            <div class="card-header"><div class="card-title">Tipo de inmueble</div></div>
+            <div style="padding:16px;height:200px"><canvas id="chart-inmueble"></canvas></div>
+          </div>
+        </div>
+        <!-- Tabla mensual detallada -->
+        <div class="card admin-only">
+          <div class="card-header"><div class="card-title">Tabla mensual detallada</div></div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>Mes</th><th>Leads</th><th>Leads vs ant.</th><th>Cierres</th><th>Cierres vs ant.</th><th>Ingresos</th><th>Ingresos vs ant.</th></tr></thead>
+            <tbody id="tabla-mensual"></tbody>
+          </table></div>
+        </div>
+        <!-- Ticket promedio -->
+        <div class="card admin-only" style="margin-top:16px">
+          <div class="card-header"><div class="card-title">Ticket promedio por tipo de póliza</div></div>
+          <div id="ticket-por-tipo" style="padding:14px 18px;display:flex;gap:12px;flex-wrap:wrap"></div>
+        </div>
+      </div>
+
+      <!-- ─── TAB: ALERTAS ─── -->
+      <div id="dtab-alertas" style="display:none">
+        <div id="alertas-container"></div>
+      </div>
+
+      <!-- ─── TAB: CARTERA ─── -->
+      <div id="dtab-cartera" class="admin-only" style="display:none">
+        <div class="kpi-grid" style="margin-bottom:16px;grid-template-columns:repeat(auto-fit,minmax(160px,1fr))">
+          <div class="kpi-card kpi-green"><div class="kpi-label">Valor cartera (rentas)</div><div class="kpi-val" id="c-valor-cartera" style="font-size:18px">—</div><div class="kpi-sub">Suma rentas activas/mes</div></div>
+          <div class="kpi-card kpi-red"><div class="kpi-label">Vencen en 30 días</div><div class="kpi-val" id="c-vence30">—</div></div>
+          <div class="kpi-card kpi-amber"><div class="kpi-label">Vencen 31–60 días</div><div class="kpi-val" id="c-vence60">—</div></div>
+          <div class="kpi-card kpi-blue"><div class="kpi-label">Vencen 61–90 días</div><div class="kpi-val" id="c-vence90">—</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Pólizas próximas a vencer (90 días)</div></div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>Folio</th><th>Póliza</th><th>Arrendatario</th><th>Arrendador</th><th>Asesor</th><th>Vence</th><th>Días rest.</th></tr></thead>
+            <tbody id="cartera-vencimiento"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- ─── TAB: RANKING ─── -->
+      <div id="dtab-ranking" class="admin-only" style="display:none">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Ranking de asesores</div></div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>#</th><th>Asesor</th><th>Cierres</th><th>Operaciones</th><th>% Conversión</th><th>Ingresos</th><th>Comisiones</th></tr></thead>
+            <tbody id="ranking-asesores"></tbody>
+          </table></div>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <div class="card-header"><div class="card-title">Top asesores por leads ganados</div></div>
+          <div style="padding:14px 18px" id="top-asesores"></div>
+        </div>
+      </div>
+
     </div>
 
     <!-- LEADS -->
@@ -518,6 +621,133 @@ tr:hover td{background:#f8fafc}
             <tbody id="rec-hist-tbody"></tbody>
           </table>
         </div>
+      </div>
+    </div>
+
+    <!-- CANCELACIONES -->
+    <div id="page-cancelaciones" class="page admin-only">
+      <div class="kpi-grid" style="margin-bottom:16px">
+        <div class="kpi-card kpi-red"><div class="kpi-label">Total cancelaciones</div><div class="kpi-val" id="canc-total">—</div><div class="kpi-sub" id="canc-pct">— de pólizas</div></div>
+        <div class="kpi-card"><div class="kpi-label">Monto devuelto</div><div class="kpi-val" id="canc-devuelto" style="font-size:18px">—</div></div>
+        <div class="kpi-card kpi-amber"><div class="kpi-label">Monto retenido</div><div class="kpi-val" id="canc-retenido" style="font-size:18px">—</div></div>
+        <div class="kpi-card"><div class="kpi-label">Por desistimiento</div><div class="kpi-val" id="canc-desistimiento">—</div></div>
+        <div class="kpi-card"><div class="kpi-label">Por incumplimiento</div><div class="kpi-val" id="canc-incumplimiento">—</div></div>
+        <div class="kpi-card"><div class="kpi-label">Error/Otro</div><div class="kpi-val" id="canc-otro">—</div></div>
+      </div>
+      <div class="section-row">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Asesor con más cancelaciones</div></div>
+          <div id="canc-por-asesor" style="padding:14px 18px"></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Distribución de motivos</div></div>
+          <div style="padding:16px;height:200px"><canvas id="chart-canc-motivos"></canvas></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Últimas cancelaciones</div></div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Folio</th><th>Póliza</th><th>Arrendatario</th><th>Asesor</th><th>Motivo</th><th>Devuelto</th><th>Retenido</th><th>Fecha</th></tr></thead>
+          <tbody id="canc-tbody"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- INCUMPLIMIENTOS -->
+    <div id="page-incumplimientos" class="page admin-only">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:14px">
+        <button class="btn btn-primary" onclick="abrirNuevoIncumplimiento()">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Registrar caso
+        </button>
+      </div>
+      <div class="kpi-grid" style="margin-bottom:16px">
+        <div class="kpi-card kpi-red"><div class="kpi-label">Casos activos</div><div class="kpi-val" id="inc-activos">—</div></div>
+        <div class="kpi-card kpi-amber"><div class="kpi-label">En gestión</div><div class="kpi-val" id="inc-gestion">—</div></div>
+        <div class="kpi-card"><div class="kpi-label">Notificados</div><div class="kpi-val" id="inc-notificados">—</div></div>
+        <div class="kpi-card kpi-red"><div class="kpi-label">Con demanda</div><div class="kpi-val" id="inc-demanda">—</div></div>
+        <div class="kpi-card kpi-green"><div class="kpi-label">Resueltos</div><div class="kpi-val" id="inc-resueltos">—</div></div>
+        <div class="kpi-card kpi-green"><div class="kpi-label">% favor arrendador</div><div class="kpi-val" id="inc-favor">—</div></div>
+        <div class="kpi-card"><div class="kpi-label">Tiempo prom. resolución</div><div class="kpi-val" id="inc-tiempo">—</div><div class="kpi-sub">días</div></div>
+      </div>
+      <div class="section-row" style="margin-bottom:16px">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Por tipo</div></div>
+          <div id="inc-tipos" style="padding:14px 18px"></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Por estatus</div></div>
+          <div style="padding:16px;height:180px"><canvas id="chart-inc-estatus"></canvas></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Casos registrados</div></div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Folio</th><th>Arrendatario</th><th>Tipo</th><th>Estatus</th><th>Asesor</th><th>Inicio</th><th>Notas</th><th></th></tr></thead>
+          <tbody id="inc-tbody"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- QUEJAS -->
+    <div id="page-quejas" class="page admin-only">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:14px">
+        <button class="btn btn-primary" onclick="abrirNuevaQueja()">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Registrar queja
+        </button>
+      </div>
+      <div class="kpi-grid" style="margin-bottom:16px">
+        <div class="kpi-card"><div class="kpi-label">Total quejas</div><div class="kpi-val" id="qja-total">—</div></div>
+        <div class="kpi-card kpi-red"><div class="kpi-label">Abiertas</div><div class="kpi-val" id="qja-abiertas">—</div></div>
+        <div class="kpi-card kpi-amber"><div class="kpi-label">En proceso</div><div class="kpi-val" id="qja-proceso">—</div></div>
+        <div class="kpi-card kpi-green"><div class="kpi-label">Resueltas</div><div class="kpi-val" id="qja-resueltas">—</div></div>
+        <div class="kpi-card kpi-green"><div class="kpi-label">% Resueltas</div><div class="kpi-val" id="qja-pct">—</div></div>
+        <div class="kpi-card"><div class="kpi-label">Tiempo prom. atención</div><div class="kpi-val" id="qja-tiempo">—</div><div class="kpi-sub">días</div></div>
+      </div>
+      <div class="section-row" style="margin-bottom:16px">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Por tipo</div></div>
+          <div id="qja-tipos" style="padding:14px 18px"></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Quejas por asesor</div></div>
+          <div id="qja-por-asesor" style="padding:14px 18px"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Registro de quejas</div></div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Reclamante</th><th>Tipo</th><th>Tipo queja</th><th>Estatus</th><th>Asesor</th><th>Apertura</th><th>Resolución</th><th></th></tr></thead>
+          <tbody id="qja-tbody"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- JURÍDICO -->
+    <div id="page-juridico" class="page admin-only">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:14px">
+        <button class="btn btn-primary" onclick="abrirNuevoCasoJuridico()">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Registrar caso
+        </button>
+      </div>
+      <div class="kpi-grid" style="margin-bottom:16px">
+        <div class="kpi-card kpi-red"><div class="kpi-label">Casos activos</div><div class="kpi-val" id="jur-activos">—</div></div>
+        <div class="kpi-card"><div class="kpi-label">Total demandas</div><div class="kpi-val" id="jur-demandas">—</div></div>
+        <div class="kpi-card"><div class="kpi-label">Notificaciones este mes</div><div class="kpi-val" id="jur-noti-mes">—</div><div class="kpi-sub" id="jur-noti-vs">vs anterior</div></div>
+        <div class="kpi-card kpi-green"><div class="kpi-label">Sentencias favorables</div><div class="kpi-val" id="jur-favorables">—</div></div>
+        <div class="kpi-card kpi-red"><div class="kpi-label">Sentencias en contra</div><div class="kpi-val" id="jur-desfavorables">—</div></div>
+        <div class="kpi-card kpi-amber"><div class="kpi-label">% Recuperación</div><div class="kpi-val" id="jur-pct-rec">—</div></div>
+        <div class="kpi-card kpi-green"><div class="kpi-label">Monto recuperado</div><div class="kpi-val" id="jur-recuperado" style="font-size:18px">—</div></div>
+        <div class="kpi-card"><div class="kpi-label">Monto reclamado</div><div class="kpi-val" id="jur-reclamado" style="font-size:18px">—</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Casos registrados</div></div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Folio</th><th>Arrendatario</th><th>Tipo</th><th>Estatus</th><th>Sentencia</th><th>Reclamado</th><th>Recuperado</th><th>Inicio</th><th></th></tr></thead>
+          <tbody id="jur-tbody"></tbody>
+        </table></div>
       </div>
     </div>
 
@@ -744,6 +974,136 @@ tr:hover td{background:#f8fafc}
   </div>
 </div>
 
+<div class="modal-overlay" id="modal-incumplimiento">
+  <div class="modal">
+    <div class="modal-title"><span id="modal-inc-title">Nuevo caso de incumplimiento</span><svg onclick="cerrarModal('modal-incumplimiento')" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+    <input type="hidden" id="inc-id">
+    <div class="form-grid">
+      <div class="form-group"><label class="form-label">Folio expediente</label><input class="form-input" id="inc-folio" placeholder="PJM-26-06-E001"></div>
+      <div class="form-group"><label class="form-label">Arrendatario</label><input class="form-input" id="inc-arrendatario" placeholder="Nombre"></div>
+      <div class="form-group"><label class="form-label">Tipo</label>
+        <select class="form-input form-select" id="inc-tipo">
+          <option value="">— Selecciona —</option>
+          <option value="falta_pago">Falta de pago</option>
+          <option value="daños_inmueble">Daños al inmueble</option>
+          <option value="abandono">Abandono</option>
+          <option value="uso_indebido">Uso indebido</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Estatus</label>
+        <select class="form-input form-select" id="inc-estatus">
+          <option value="en_gestion">En gestión</option>
+          <option value="notificado">Notificado</option>
+          <option value="demanda_iniciada">Demanda iniciada</option>
+          <option value="resuelto">Resuelto</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Resultado (si resuelto)</label>
+        <select class="form-input form-select" id="inc-resultado">
+          <option value="">— Pendiente —</option>
+          <option value="a_favor_arrendador">A favor del arrendador</option>
+          <option value="en_contra">En contra</option>
+          <option value="acuerdo">Acuerdo</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Fecha inicio</label><input class="form-input" id="inc-fecha-inicio" type="date"></div>
+      <div class="form-group"><label class="form-label">Fecha resolución</label><input class="form-input" id="inc-fecha-res" type="date"></div>
+      <div class="form-group full"><label class="form-label">Notas</label><textarea class="form-input" id="inc-notas" rows="2"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="cerrarModal('modal-incumplimiento')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarIncumplimiento()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-queja">
+  <div class="modal">
+    <div class="modal-title"><span id="modal-qja-title">Nueva queja</span><svg onclick="cerrarModal('modal-queja')" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+    <input type="hidden" id="qja-id">
+    <div class="form-grid">
+      <div class="form-group"><label class="form-label">Nombre reclamante</label><input class="form-input" id="qja-nombre" placeholder="Nombre completo"></div>
+      <div class="form-group"><label class="form-label">Tipo reclamante</label>
+        <select class="form-input form-select" id="qja-reclamante">
+          <option value="arrendador">Arrendador</option>
+          <option value="arrendatario">Arrendatario</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Tipo de queja</label>
+        <select class="form-input form-select" id="qja-tipo">
+          <option value="">— Selecciona —</option>
+          <option value="mal_servicio">Mal servicio</option>
+          <option value="error_contrato">Error en contrato</option>
+          <option value="demora_investigacion">Demora en investigación</option>
+          <option value="inconformidad_dictamen">Inconformidad con dictamen</option>
+          <option value="otro">Otro</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Estatus</label>
+        <select class="form-input form-select" id="qja-estatus">
+          <option value="abierta">Abierta</option>
+          <option value="en_proceso">En proceso</option>
+          <option value="resuelta">Resuelta</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Asesor involucrado</label>
+        <select class="form-input form-select" id="qja-asesor"><option value="">— Selecciona —</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Fecha apertura</label><input class="form-input" id="qja-fecha-ap" type="date"></div>
+      <div class="form-group full"><label class="form-label">Descripción</label><textarea class="form-input" id="qja-descripcion" rows="2"></textarea></div>
+      <div class="form-group full"><label class="form-label">Resolución</label><textarea class="form-input" id="qja-resolucion" rows="2" placeholder="Dejar vacío si pendiente"></textarea></div>
+      <div class="form-group"><label class="form-label">Fecha resolución</label><input class="form-input" id="qja-fecha-res" type="date"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="cerrarModal('modal-queja')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarQueja()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-juridico">
+  <div class="modal">
+    <div class="modal-title"><span id="modal-jur-title">Nuevo caso jurídico</span><svg onclick="cerrarModal('modal-juridico')" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+    <input type="hidden" id="jur-id">
+    <div class="form-grid">
+      <div class="form-group"><label class="form-label">Folio expediente</label><input class="form-input" id="jur-folio" placeholder="PJM-26-06-E001"></div>
+      <div class="form-group"><label class="form-label">Arrendatario</label><input class="form-input" id="jur-arrendatario" placeholder="Nombre"></div>
+      <div class="form-group"><label class="form-label">Tipo</label>
+        <select class="form-input form-select" id="jur-tipo">
+          <option value="demanda">Demanda</option>
+          <option value="notificacion">Notificación legal</option>
+          <option value="conciliacion">Conciliación</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Estatus</label>
+        <select class="form-input form-select" id="jur-estatus">
+          <option value="activo">Activo</option>
+          <option value="resuelto">Resuelto</option>
+          <option value="archivado">Archivado</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Sentencia</label>
+        <select class="form-input form-select" id="jur-sentencia">
+          <option value="pendiente">Pendiente</option>
+          <option value="favorable">Favorable</option>
+          <option value="desfavorable">Desfavorable</option>
+          <option value="acuerdo">Acuerdo</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Juzgado</label><input class="form-input" id="jur-juzgado" placeholder="Juzgado..."></div>
+      <div class="form-group"><label class="form-label">Monto reclamado</label><input class="form-input" id="jur-reclamado-inp" placeholder="50000"></div>
+      <div class="form-group"><label class="form-label">Monto recuperado</label><input class="form-input" id="jur-recuperado-inp" placeholder="0"></div>
+      <div class="form-group"><label class="form-label">Fecha inicio</label><input class="form-input" id="jur-fecha-ini" type="date"></div>
+      <div class="form-group"><label class="form-label">Fecha resolución</label><input class="form-input" id="jur-fecha-res" type="date"></div>
+      <div class="form-group full"><label class="form-label">Notas</label><textarea class="form-input" id="jur-notas" rows="2"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="cerrarModal('modal-juridico')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarCasoJuridico()">Guardar</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modal-guardia">
   <div class="modal">
     <div class="modal-title"><span>Asignar guardia</span><svg onclick="cerrarModal('modal-guardia')" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
@@ -806,95 +1166,235 @@ function nav(page) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + page).classList.add('active');
   document.querySelector(`[onclick="nav('${page}')"]`).classList.add('active');
-  document.getElementById('page-title').textContent = {dashboard:'Dashboard',leads:'Leads',llamadas:'Llamadas',guardias:'Guardias',asesores:'Asesores'}[page];
+  const titles = {dashboard:'Dashboard',leads:'Leads',llamadas:'Llamadas',guardias:'Guardias',asesores:'Asesores',expedientes:'Expedientes',solicitudes:'Solicitudes',recordatorios:'Recordatorios',cancelaciones:'Cancelaciones',incumplimientos:'Incumplimientos',quejas:'Quejas',juridico:'Jurídico'};
+  document.getElementById('page-title').textContent = titles[page] || page;
   if (page === 'dashboard') cargarDashboard();
   if (page === 'leads') cargarLeads();
   if (page === 'llamadas') cargarLlamadas();
   if (page === 'guardias') cargarGuardias();
   if (page === 'asesores') cargarAsesores();
+  if (page === 'expedientes') cargarExpedientes();
+  if (page === 'solicitudes') cargarSolicitudes();
+  if (page === 'recordatorios') cargarRecordatorios();
+  if (page === 'cancelaciones') cargarCancelaciones();
+  if (page === 'incumplimientos') cargarIncumplimientos();
+  if (page === 'quejas') cargarQuejas();
+  if (page === 'juridico') cargarJuridico();
 }
 
+function dashTab(tab, el) {
+  document.querySelectorAll('[id^="dtab-"]').forEach(d => d.style.display = 'none');
+  document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('dtab-' + tab).style.display = '';
+  el.classList.add('active');
+}
+
+function setExpView(v) {
+  expCurrentView = v;
+  document.getElementById('exp-cards-view').style.display = v === 'cards' ? '' : 'none';
+  document.getElementById('exp-table-view').style.display = v === 'table' ? '' : 'none';
+  document.getElementById('exp-view-cards').classList.toggle('active', v === 'cards');
+  document.getElementById('exp-view-table').classList.toggle('active', v === 'table');
+}
+let expCurrentView = 'cards';
+
 // ── DASHBOARD ──
-let _chartCierres = null, _chartLeads = null;
+let _charts = {};
+function destroyChart(k) { if (_charts[k]) { _charts[k].destroy(); _charts[k] = null; } }
+
+function pctVs(cur, prev) {
+  if (!prev) return cur > 0 ? '+100%' : '—';
+  const d = ((cur - prev) / prev * 100).toFixed(0);
+  return (d >= 0 ? '+' : '') + d + '%';
+}
+function fmtMXN(n) { return n ? '$' + Number(n).toLocaleString('es-MX', {maximumFractionDigits:0}) : '$0'; }
+
 async function cargarDashboard() {
   const d = await api('/api/dashboard');
   if (!d) return;
 
-  // KPIs leads
-  document.getElementById('kpi-total').textContent = d.totales.total;
-  document.getElementById('kpi-ganados').textContent = d.totales.ganados;
-  document.getElementById('kpi-perdidos').textContent = d.totales.perdidos;
-  document.getElementById('kpi-proceso').textContent = d.totales.en_proceso;
-  document.getElementById('kpi-nuevos-hoy').textContent = d.hoy;
-  document.getElementById('kpi-hoy').textContent = `+${d.hoy} hoy`;
-  document.getElementById('kpi-semana').textContent = `${d.semana} esta semana`;
-  document.getElementById('kpi-pct-cierre').textContent = d.pct_cierre + '% cierre';
-  document.getElementById('kpi-pct-perdida').textContent = d.pct_perdida + '% pérdida';
-  document.getElementById('badge-leads').textContent = d.totales.total;
+  // ── KPIs leads resumen ──
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  set('kpi-total', d.totales.total);
+  set('kpi-ganados', d.totales.ganados);
+  set('kpi-perdidos', d.totales.perdidos);
+  set('kpi-proceso', d.totales.en_proceso);
+  set('kpi-hoy', `+${d.hoy} hoy · ${d.semana} esta semana`);
+  set('kpi-pct-cierre', d.pct_cierre + '% cierre');
+  set('kpi-pct-perdida', d.pct_perdida + '% pérdida');
+  set('kpi-mes', d.mes);
+  set('kpi-mes-vs', `${pctVs(d.mes, d.mesPasado)} vs mes anterior (${d.mesPasado})`);
+  set('badge-leads', d.totales.total);
 
   if (USER.rol === 'admin' && d.expTotales) {
-    const fmt = n => n ? '$' + Number(n).toLocaleString('es-MX', {maximumFractionDigits:0}) : '$0';
-    document.getElementById('kpi-ingresos').textContent = fmt(d.expTotales.ingreso_total_sum);
-    document.getElementById('kpi-comisiones').textContent = fmt(d.expTotales.comision_total_sum);
-    document.getElementById('kpi-exp-activos').textContent = d.expTotales.activos || 0;
+    set('kpi-ingresos', fmtMXN(d.expTotales.ingreso_total_sum));
+    set('kpi-comisiones', fmtMXN(d.expTotales.comision_total_sum));
+    set('kpi-ing-mes', fmtMXN(d.ingresosMesActual));
+    set('kpi-ing-mes-vs', `${pctVs(d.ingresosMesActual, d.ingresosMesPasado)} vs mes anterior`);
+    set('kpi-cierres-mes', d.cierresMesActual);
+    set('kpi-cierres-mes-vs', `${pctVs(d.cierresMesActual, d.cierresMesPasado)} vs mes anterior (${d.cierresMesPasado})`);
+    set('kpi-cartera', fmtMXN(d.expTotales.valor_cartera_sum));
+    set('kpi-tiempo-cierre', d.tiempoPromCierre?.dias ? Math.round(d.tiempoPromCierre.dias) : '—');
+    set('kpi-exp-activos', d.expTotales.activos || 0);
+    set('kpi-mes-top', d.mesMasCierres?.mes || '—');
+    set('kpi-tipo-top', d.tipoPropMasCerrado ? `${d.tipoPropMasCerrado.tipo_inmueble} (${d.tipoPropMasCerrado.c})` : 'Sin datos');
     const uc = d.ultimoCierre;
-    document.getElementById('kpi-ultimo-cierre').innerHTML = uc
-      ? `<span style="font-size:13px;font-weight:700">${uc.folio}</span><br><span style="font-size:11px;color:#94a3b8">${uc.nombre_arrendatario||''}</span>`
-      : '—';
-    document.getElementById('kpi-mes-top').textContent = d.mesMasCierres?.mes || '—';
-    document.getElementById('kpi-tipo-top').textContent = d.tipoPropMasCerrado
-      ? `${d.tipoPropMasCerrado.tipo_inmueble} (${d.tipoPropMasCerrado.c})`
-      : 'Sin datos';
+    set('kpi-ultimo-cierre', '');
+    const ucEl = document.getElementById('kpi-ultimo-cierre');
+    if (ucEl) ucEl.innerHTML = uc ? `<span style="font-size:13px;font-weight:700">${uc.folio}</span><br><span style="font-size:11px;color:#94a3b8">${uc.nombre_arrendatario||''}</span>` : '—';
 
-    // Ranking asesores
-    const rankBody = document.getElementById('ranking-asesores');
-    rankBody.innerHTML = (d.rankingAsesores||[]).length
-      ? d.rankingAsesores.map((a, i) => `<tr>
-          <td style="font-weight:700;color:#94a3b8">${i+1}</td>
-          <td style="font-weight:600">${a.asesor_nombre||'—'}</td>
-          <td style="color:#15803d;font-weight:700">${a.cierres||0}</td>
-          <td style="color:#64748b">${a.operaciones||0}</td>
-          <td style="font-weight:600">$${Number(a.ingresos||0).toLocaleString('es-MX',{maximumFractionDigits:0})}</td>
-          <td style="color:#d97706;font-weight:600">$${Number(a.comisiones||0).toLocaleString('es-MX',{maximumFractionDigits:0})}</td>
-        </tr>`).join('')
-      : '<tr><td colspan="6" style="text-align:center;padding:24px;color:#94a3b8;font-size:12px">Sin operaciones registradas</td></tr>';
-
-    // Gráfica cierres por mes
-    const mesesC = (d.cierresPorMes||[]).map(x => x.mes);
-    const valsC = (d.cierresPorMes||[]).map(x => x.c);
-    if (_chartCierres) _chartCierres.destroy();
-    const ctxC = document.getElementById('chart-cierres');
-    if (ctxC) _chartCierres = new Chart(ctxC, {
+    // ── Gráficas tendencias ──
+    const mesesI = (d.ingresosPorMes||[]).map(x => x.mes.slice(5));
+    const valsI = (d.ingresosPorMes||[]).map(x => x.ingresos || 0);
+    destroyChart('ingresos');
+    const ctxI = document.getElementById('chart-ingresos');
+    if (ctxI) _charts.ingresos = new Chart(ctxI, {
       type: 'bar',
-      data: { labels: mesesC, datasets: [{ label: 'Cierres', data: valsC, backgroundColor: '#0a1f3c', borderRadius: 6 }] },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+      data: { labels: mesesI, datasets: [{ label: 'Ingresos', data: valsI, backgroundColor: '#15803d', borderRadius: 4 }] },
+      options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false} }, scales:{ y:{ beginAtZero:true, ticks:{ callback: v => '$'+Number(v).toLocaleString('es-MX',{notation:'compact'}) } } } }
     });
 
-    // Gráfica leads por mes
-    const mesesL = (d.leadsPorMes||[]).map(x => x.mes);
-    const valsL = (d.leadsPorMes||[]).map(x => x.c);
-    if (_chartLeads) _chartLeads.destroy();
-    const ctxL = document.getElementById('chart-leads');
-    if (ctxL) _chartLeads = new Chart(ctxL, {
-      type: 'line',
-      data: { labels: mesesL, datasets: [{ label: 'Leads', data: valsL, borderColor: '#d4a017', backgroundColor: 'rgba(212,160,23,.15)', tension: 0.3, fill: true, pointRadius: 4 }] },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+    const mesesC = (d.cierresPorMes||[]).map(x => x.mes.slice(5));
+    const valsC = (d.cierresPorMes||[]).map(x => x.c);
+    destroyChart('cierres');
+    const ctxC = document.getElementById('chart-cierres');
+    if (ctxC) _charts.cierres = new Chart(ctxC, {
+      type: 'bar',
+      data: { labels: mesesC, datasets: [{ label: 'Cierres', data: valsC, backgroundColor: '#0a1f3c', borderRadius: 4 }] },
+      options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false} }, scales:{ y:{ beginAtZero:true, ticks:{stepSize:1} } } }
     });
+
+    const inmLabels = (d.tipoPorInmueble||[]).map(x => x.tipo_inmueble);
+    const inmVals = (d.tipoPorInmueble||[]).map(x => x.c);
+    destroyChart('inmueble');
+    const ctxInm = document.getElementById('chart-inmueble');
+    if (ctxInm) _charts.inmueble = new Chart(ctxInm, {
+      type: 'doughnut',
+      data: { labels: inmLabels, datasets: [{ data: inmVals, backgroundColor: ['#0a1f3c','#c0c8d8','#d4a017','#15803d','#2563eb','#7c3aed'] }] },
+      options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'right', labels:{ font:{size:10} } } } }
+    });
+
+    // ── Tabla mensual detallada ──
+    const mesesAll = [...new Set([...(d.leadsPorMes||[]).map(x=>x.mes), ...(d.cierresPorMes||[]).map(x=>x.mes), ...(d.ingresosPorMes||[]).map(x=>x.mes)])].sort();
+    const lMap = Object.fromEntries((d.leadsPorMes||[]).map(x=>[x.mes,x.c]));
+    const cMap = Object.fromEntries((d.cierresPorMes||[]).map(x=>[x.mes,x.c]));
+    const iMap = Object.fromEntries((d.ingresosPorMes||[]).map(x=>[x.mes,x.ingresos||0]));
+    const tbody = document.getElementById('tabla-mensual');
+    if (tbody) tbody.innerHTML = mesesAll.map((mes, i) => {
+      const prev = mesesAll[i-1];
+      const l = lMap[mes]||0, lp = prev ? (lMap[prev]||0) : null;
+      const c = cMap[mes]||0, cp = prev ? (cMap[prev]||0) : null;
+      const ing = iMap[mes]||0, inp = prev ? (iMap[prev]||0) : null;
+      const vs = (cur, prv) => prv === null ? '' : `<span style="font-size:10px;color:${cur>=prv?'#15803d':'#dc2626'}">${pctVs(cur,prv)}</span>`;
+      return `<tr>
+        <td style="font-weight:700;font-family:monospace">${mes}</td>
+        <td style="font-weight:600">${l}</td><td>${vs(l,lp)}</td>
+        <td style="font-weight:600">${c}</td><td>${vs(c,cp)}</td>
+        <td style="font-weight:600">${fmtMXN(ing)}</td><td>${vs(ing,inp)}</td>
+      </tr>`;
+    }).reverse().join('');
+
+    // ── Ticket promedio por tipo ──
+    const tickEl = document.getElementById('ticket-por-tipo');
+    if (tickEl) tickEl.innerHTML = (d.ticketPorTipo||[]).map(t => `
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px 16px;min-width:140px">
+        <div style="font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase">${t.tipo_poliza||'Sin tipo'}</div>
+        <div style="font-size:18px;font-weight:800;color:#0a1f3c;margin-top:4px">${fmtMXN(t.ticket_promedio)}</div>
+        <div style="font-size:10px;color:#94a3b8">${t.ops} operaciones</div>
+      </div>`).join('') || '<p style="color:#94a3b8;font-size:12px">Sin datos aún</p>';
+
+    // ── Ranking ──
+    const rankBody = document.getElementById('ranking-asesores');
+    if (rankBody) rankBody.innerHTML = (d.rankingAsesores||[]).length
+      ? d.rankingAsesores.map((a, i) => {
+          const pct = a.operaciones > 0 ? (a.cierres/a.operaciones*100).toFixed(0)+'%' : '—';
+          return `<tr>
+            <td style="font-weight:700;color:#94a3b8">${i+1}</td>
+            <td style="font-weight:600">${a.asesor_nombre||'—'}</td>
+            <td style="color:#15803d;font-weight:700">${a.cierres||0}</td>
+            <td>${a.operaciones||0}</td>
+            <td style="color:#2563eb;font-weight:600">${pct}</td>
+            <td style="font-weight:600">${fmtMXN(a.ingresos)}</td>
+            <td style="color:#d97706;font-weight:600">${fmtMXN(a.comisiones)}</td>
+          </tr>`;
+        }).join('')
+      : '<tr><td colspan="7" style="text-align:center;padding:24px;color:#94a3b8;font-size:12px">Sin operaciones</td></tr>';
+
+    // ── Top asesores barras ──
+    const topEl = document.getElementById('top-asesores');
+    if (topEl && (d.top_asesores||[]).length) {
+      const max = Math.max(...d.top_asesores.map(a=>a.ganados), 1);
+      topEl.innerHTML = d.top_asesores.map(a => `
+        <div class="bar-row">
+          <div class="bar-name">${a.asesor_nombre}</div>
+          <div class="bar-track"><div class="bar-fill green" style="width:${Math.round(a.ganados/max*100)}%"></div></div>
+          <div class="bar-pct">${a.ganados}</div>
+        </div>`).join('');
+    }
+
+    // ── Cartera ──
+    const cartera = d.cartera90 || [];
+    set('c-valor-cartera', fmtMXN(d.expTotales.valor_cartera_sum));
+    set('c-vence30', cartera.filter(x=>x.dias_restantes<=30).length);
+    set('c-vence60', cartera.filter(x=>x.dias_restantes>30&&x.dias_restantes<=60).length);
+    set('c-vence90', cartera.filter(x=>x.dias_restantes>60&&x.dias_restantes<=90).length);
+    const ctb = document.getElementById('cartera-vencimiento');
+    if (ctb) ctb.innerHTML = cartera.length
+      ? cartera.map(e => `<tr>
+          <td style="font-size:11px;font-weight:700;color:#0a1f3c">${e.folio}</td>
+          <td style="font-size:11px">${e.folio_poliza||'—'}</td>
+          <td>${e.nombre_arrendatario||'—'}</td>
+          <td style="font-size:11px;color:#64748b">${e.nombre_arrendador||'—'}</td>
+          <td style="font-size:11px">${e.asesor_nombre||'—'}</td>
+          <td style="font-size:11px">${e.fin_arrendamiento||'—'}</td>
+          <td style="font-weight:700;color:${e.dias_restantes<=15?'#dc2626':e.dias_restantes<=30?'#d97706':'#15803d'}">${e.dias_restantes}d</td>
+        </tr>`).join('')
+      : '<tr><td colspan="7" style="text-align:center;padding:24px;color:#94a3b8;font-size:12px">Sin pólizas próximas a vencer</td></tr>';
   }
 
-  // Mi dashboard (asesor)
+  // ── Gráfica leads ──
+  const mesesL = (d.leadsPorMes||[]).map(x => x.mes.slice(5));
+  const valsL = (d.leadsPorMes||[]).map(x => x.c);
+  destroyChart('leads');
+  const ctxL = document.getElementById('chart-leads');
+  if (ctxL) _charts.leads = new Chart(ctxL, {
+    type: 'line',
+    data: { labels: mesesL, datasets: [{ label: 'Leads', data: valsL, borderColor: '#d4a017', backgroundColor: 'rgba(212,160,23,.15)', tension: 0.3, fill: true, pointRadius: 3 }] },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false} }, scales:{ y:{ beginAtZero:true } } }
+  });
+
+  // ── Alertas ──
+  const alertas = [];
+  (d.polizasPorVencer||[]).forEach(e => alertas.push({ tipo:'vencer', color:'#d97706', icon:'⏰', titulo:`Póliza por vencer: ${e.folio_poliza||e.folio}`, sub:`${e.nombre_arrendatario||''} — ${e.dias_restantes} días restantes · ${e.asesor_nombre||''}` }));
+  (d.expEstancados||[]).forEach(e => alertas.push({ tipo:'estancado', color:'#dc2626', icon:'🔴', titulo:`Expediente estancado: ${e.folio}`, sub:`${e.estatus_general} · Sin actividad ${e.dias_sin_actividad} días · ${e.asesor_nombre||''}` }));
+  (d.sinDictamen||[]).forEach(e => alertas.push({ tipo:'dictamen', color:'#2563eb', icon:'⚖️', titulo:`Opinión sin dictamen: ${e.folio_opinion||e.folio}`, sub:`Asesor: ${e.asesor_nombre||'—'}` }));
+  (d.formsSinLlenar||[]).forEach(e => alertas.push({ tipo:'form', color:'#7c3aed', icon:'📋', titulo:`Formulario sin completar: ${e.folio}`, sub:`${e.workflow_etapa} · ${e.dias} días enviado · ${e.asesor_nombre||''}` }));
+  (d.leadsSinSeguimiento||[]).forEach(l => alertas.push({ tipo:'seguimiento', color:'#64748b', icon:'📞', titulo:`Lead sin seguimiento: ${l.nombre||l.lid}`, sub:`Estado: ${l.estado} · Asesor: ${l.asesor_nombre||'Sin asignar'}` }));
+
+  const badge = document.getElementById('alertas-badge');
+  if (badge) { badge.textContent = alertas.length; badge.style.display = alertas.length ? '' : 'none'; }
+
+  const ac = document.getElementById('alertas-container');
+  if (ac) ac.innerHTML = alertas.length
+    ? alertas.map(a => `<div style="background:#fff;border:1px solid #e2e8f0;border-left:4px solid ${a.color};border-radius:8px;padding:12px 16px;margin-bottom:10px;display:flex;align-items:flex-start;gap:10px">
+        <span style="font-size:18px">${a.icon}</span>
+        <div><div style="font-size:13px;font-weight:600;color:#1a2d4a">${a.titulo}</div><div style="font-size:11px;color:#64748b;margin-top:2px">${a.sub}</div></div>
+      </div>`).join('')
+    : '<div style="text-align:center;padding:48px;color:#94a3b8"><div style="font-size:32px;margin-bottom:12px">✅</div><div style="font-size:14px;font-weight:600">Todo en orden</div><div style="font-size:12px;margin-top:4px">No hay alertas pendientes</div></div>';
+
+  // ── Mi dashboard (asesor) ──
   if (USER.rol !== 'admin' && d.miDash) {
     document.getElementById('kpi-mi-grid').style.display = '';
-    const fmt = n => n ? '$' + Number(n).toLocaleString('es-MX', {maximumFractionDigits:0}) : '$0';
-    document.getElementById('mi-cierres').textContent = d.miDash.cierres;
-    document.getElementById('mi-ops').textContent = d.miDash.operaciones;
-    document.getElementById('mi-ingresos').textContent = fmt(d.miDash.ingresos);
-    document.getElementById('mi-comisiones').textContent = fmt(d.miDash.comisiones);
-    document.getElementById('mi-mejor-mes').textContent = d.miDash.mejorMes;
+    set('mi-cierres', d.miDash.cierres);
+    set('mi-cierres-mes', `${d.miDash.cierresMes} este mes`);
+    set('mi-ops', d.miDash.operaciones);
+    set('mi-ingresos', fmtMXN(d.miDash.ingresos));
+    set('mi-comisiones', fmtMXN(d.miDash.comisiones));
+    set('mi-mejor-mes', d.miDash.mejorMes);
   }
 
   const recientes = document.getElementById('leads-recientes');
-  recientes.innerHTML = d.recientes.map(l => {
+  if (recientes) recientes.innerHTML = (d.recientes||[]).map(l => {
     const ini = (l.nombre||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     return `<div class="lead-row">
       <div class="lead-av">${ini}</div>
@@ -1262,23 +1762,7 @@ function fechaRelativa(f) {
   return `${Math.floor(diff/86400000)}d`;
 }
 
-// ── EXPEDIENTES — VISTA Y BÚSQUEDA ──
-let expCurrentView = 'cards';
-
-function setExpView(view) {
-  expCurrentView = view;
-  const cards = document.getElementById('exp-cards-view');
-  const tbl = document.getElementById('exp-table-view');
-  const tabC = document.getElementById('exp-view-cards');
-  const tabT = document.getElementById('exp-view-table');
-  if (view === 'cards') {
-    cards.style.display = ''; tbl.style.display = 'none';
-    tabC.classList.add('active'); tabT.classList.remove('active');
-  } else {
-    cards.style.display = 'none'; tbl.style.display = '';
-    tabC.classList.remove('active'); tabT.classList.add('active');
-  }
-}
+// ── EXPEDIENTES — BÚSQUEDA ──
 
 async function buscarFolioUniversal(val) {
   if (!val || val.trim().length < 3) { cargarExpedientes(); return; }
@@ -1750,24 +2234,349 @@ function recsBadges(e) {
   }).join(' ');
 }
 
-// ── NAV UPDATE ──
-const _navOriginal = nav;
-function nav(page) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('page-' + page).classList.add('active');
-  const navEl = document.querySelector(`[onclick="nav('${page}')"]`);
-  if (navEl) navEl.classList.add('active');
-  const titles = {dashboard:'Dashboard',leads:'Leads',llamadas:'Llamadas',guardias:'Guardias',asesores:'Asesores',expedientes:'Expedientes',solicitudes:'Solicitudes',recordatorios:'Recordatorios'};
-  document.getElementById('page-title').textContent = titles[page] || page;
-  if (page === 'dashboard') cargarDashboard();
-  if (page === 'leads') cargarLeads();
-  if (page === 'llamadas') cargarLlamadas();
-  if (page === 'guardias') cargarGuardias();
-  if (page === 'asesores') cargarAsesores();
-  if (page === 'expedientes') cargarExpedientes();
-  if (page === 'solicitudes') cargarSolicitudes();
-  if (page === 'recordatorios') cargarRecordatorios();
+// ── CANCELACIONES ──
+async function cargarCancelaciones() {
+  const d = await api('/api/dashboard');
+  if (!d) return;
+  const c = d.cancelaciones || {};
+  const fmt = n => n ? '$'+Number(n).toLocaleString('es-MX',{maximumFractionDigits:0}) : '$0';
+  const set = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+  set('canc-total', c.total||0);
+  const pct = d.polizasActivas > 0 ? ((c.total/(d.polizasActivas+c.total))*100).toFixed(1)+'% de pólizas cerradas' : '—';
+  set('canc-pct', pct);
+  set('canc-devuelto', fmt(c.monto_devuelto_sum));
+  set('canc-retenido', fmt(c.monto_retenido_sum));
+  set('canc-desistimiento', c.desistimientos||0);
+  set('canc-incumplimiento', c.por_incumplimiento||0);
+  set('canc-otro', (c.por_error||0)+(c.otros||0));
+
+  const porAsesorEl = document.getElementById('canc-por-asesor');
+  if (porAsesorEl) {
+    const items = d.cancelacionesPorAsesor || [];
+    const max = Math.max(...items.map(a=>a.c), 1);
+    porAsesorEl.innerHTML = items.length
+      ? items.map(a => `<div class="bar-row"><div class="bar-name">${a.asesor_nombre}</div><div class="bar-track"><div class="bar-fill red" style="width:${Math.round(a.c/max*100)}%"></div></div><div class="bar-pct">${a.c}</div></div>`).join('')
+      : '<p style="color:#94a3b8;font-size:12px">Sin datos</p>';
+  }
+
+  destroyChart('cancMotivos');
+  const motCtx = document.getElementById('chart-canc-motivos');
+  if (motCtx && c.total > 0) _charts.cancMotivos = new Chart(motCtx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Desistimiento','Incumplimiento','Error expediente','Otro'],
+      datasets: [{ data: [c.desistimientos||0, c.por_incumplimiento||0, c.por_error||0, c.otros||0], backgroundColor: ['#0a1f3c','#dc2626','#d97706','#94a3b8'] }]
+    },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'right', labels:{ font:{size:10} } } } }
+  });
+
+  const tbody = document.getElementById('canc-tbody');
+  if (tbody) tbody.innerHTML = (d.ultimasCancelaciones||[]).length
+    ? (d.ultimasCancelaciones||[]).map(e => `<tr>
+        <td style="font-size:11px;font-weight:700;color:#0a1f3c">${e.folio}</td>
+        <td style="font-size:11px">${e.folio_poliza||'—'}</td>
+        <td>${e.nombre_arrendatario||'—'}</td>
+        <td style="font-size:11px">${e.asesor_nombre||'—'}</td>
+        <td><span class="pill pill-perdido">${e.motivo_cancelacion||'—'}</span></td>
+        <td style="font-size:11px">${fmt(e.cantidad_devuelta)}</td>
+        <td style="font-size:11px">${fmt(e.monto_retenido)}</td>
+        <td style="font-size:10px;color:#94a3b8">${e.fecha_devolucion||e.updated_at?.slice(0,10)||'—'}</td>
+      </tr>`).join('')
+    : '<tr><td colspan="8" style="text-align:center;padding:24px;color:#94a3b8;font-size:12px">Sin cancelaciones registradas</td></tr>';
+}
+
+// ── INCUMPLIMIENTOS ──
+async function cargarIncumplimientos() {
+  const data = await api('/api/incumplimientos');
+  if (!data) return;
+  const d = await api('/api/dashboard');
+  const s = d?.incumplimientosStats || {};
+  const set = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+  const activos = (s.en_gestion||0)+(s.notificados||0)+(s.en_demanda||0);
+  set('inc-activos', activos);
+  set('inc-gestion', s.en_gestion||0);
+  set('inc-notificados', s.notificados||0);
+  set('inc-demanda', s.en_demanda||0);
+  set('inc-resueltos', s.resueltos||0);
+  const pctFav = s.resueltos > 0 ? ((s.a_favor||0)/s.resueltos*100).toFixed(0)+'%' : '—';
+  set('inc-favor', pctFav);
+  set('inc-tiempo', d?.tiempoPromResolucion?.dias ? Math.round(d.tiempoPromResolucion.dias) : '—');
+
+  const tiposEl = document.getElementById('inc-tipos');
+  if (tiposEl) tiposEl.innerHTML = [
+    { l:'Falta de pago', v: s.falta_pago||0, c:'#dc2626' },
+    { l:'Daños al inmueble', v: s.daños||0, c:'#d97706' },
+    { l:'Abandono', v: s.abandono||0, c:'#7c3aed' },
+    { l:'Uso indebido', v: s.uso_indebido||0, c:'#2563eb' },
+  ].map(t => `<div class="bar-row"><div class="bar-name">${t.l}</div><div class="bar-track"><div class="bar-fill" style="background:${t.c};height:8px;border-radius:4px;width:${Math.round(t.v/Math.max(s.falta_pago||0,s.daños||0,s.abandono||0,s.uso_indebido||0,1)*100)}%"></div></div><div class="bar-pct">${t.v}</div></div>`).join('');
+
+  destroyChart('incEstatus');
+  const ctx = document.getElementById('chart-inc-estatus');
+  if (ctx) _charts.incEstatus = new Chart(ctx, {
+    type: 'doughnut',
+    data: { labels:['En gestión','Notificado','Con demanda','Resuelto'], datasets:[{ data:[s.en_gestion||0,s.notificados||0,s.en_demanda||0,s.resueltos||0], backgroundColor:['#d97706','#2563eb','#dc2626','#15803d'] }] },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'right', labels:{ font:{size:10} } } } }
+  });
+
+  const TIPOS = { falta_pago:'Falta de pago', daños_inmueble:'Daños', abandono:'Abandono', uso_indebido:'Uso indebido' };
+  const ESTATUS = { en_gestion:'En gestión', notificado:'Notificado', demanda_iniciada:'Con demanda', resuelto:'Resuelto' };
+  const SC = { en_gestion:'pill-proceso', notificado:'pill-manual', demanda_iniciada:'pill-perdido', resuelto:'pill-ganado' };
+  const tbody = document.getElementById('inc-tbody');
+  if (tbody) tbody.innerHTML = data.length
+    ? data.map(r => `<tr>
+        <td style="font-size:11px;font-weight:700;color:#0a1f3c">${r.folio||'—'}</td>
+        <td>${r.nombre_arrendatario||'—'}</td>
+        <td>${TIPOS[r.tipo]||r.tipo||'—'}</td>
+        <td><span class="pill ${SC[r.estatus]||'pill-incompleto'}">${ESTATUS[r.estatus]||r.estatus}</span></td>
+        <td style="font-size:11px">${r.asesor_nombre||'—'}</td>
+        <td style="font-size:11px;color:#64748b">${r.fecha_inicio||'—'}</td>
+        <td style="font-size:11px;color:#64748b;max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.notas||'—'}</td>
+        <td><div class="row-actions">
+          <div class="icon-btn" onclick="editarIncumplimiento(${r.id})"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
+          <div class="icon-btn danger" onclick="eliminarIncumplimiento(${r.id})"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg></div>
+        </div></td>
+      </tr>`).join('')
+    : '<tr><td colspan="8" style="text-align:center;padding:24px;color:#94a3b8;font-size:12px">Sin casos registrados</td></tr>';
+}
+
+let _incData = [];
+function abrirNuevoIncumplimiento() {
+  document.getElementById('modal-inc-title').textContent = 'Nuevo caso de incumplimiento';
+  document.getElementById('inc-id').value = '';
+  ['inc-folio','inc-arrendatario','inc-notas'].forEach(id => document.getElementById(id).value = '');
+  ['inc-tipo','inc-resultado'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('inc-estatus').value = 'en_gestion';
+  ['inc-fecha-inicio','inc-fecha-res'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('modal-incumplimiento').classList.add('open');
+}
+async function editarIncumplimiento(id) {
+  const r = await api(`/api/incumplimientos/${id}`);
+  if (!r) return;
+  document.getElementById('modal-inc-title').textContent = 'Editar caso';
+  document.getElementById('inc-id').value = r.id;
+  document.getElementById('inc-folio').value = r.folio||'';
+  document.getElementById('inc-arrendatario').value = r.nombre_arrendatario||'';
+  document.getElementById('inc-tipo').value = r.tipo||'';
+  document.getElementById('inc-estatus').value = r.estatus||'en_gestion';
+  document.getElementById('inc-resultado').value = r.resultado||'';
+  document.getElementById('inc-fecha-inicio').value = r.fecha_inicio||'';
+  document.getElementById('inc-fecha-res').value = r.fecha_resolucion||'';
+  document.getElementById('inc-notas').value = r.notas||'';
+  document.getElementById('modal-incumplimiento').classList.add('open');
+}
+async function guardarIncumplimiento() {
+  const id = document.getElementById('inc-id').value;
+  const body = {
+    folio: document.getElementById('inc-folio').value,
+    nombre_arrendatario: document.getElementById('inc-arrendatario').value,
+    tipo: document.getElementById('inc-tipo').value,
+    estatus: document.getElementById('inc-estatus').value,
+    resultado: document.getElementById('inc-resultado').value,
+    fecha_inicio: document.getElementById('inc-fecha-inicio').value,
+    fecha_resolucion: document.getElementById('inc-fecha-res').value,
+    notas: document.getElementById('inc-notas').value,
+  };
+  const r = await api(id ? `/api/incumplimientos/${id}` : '/api/incumplimientos', { method: id?'PUT':'POST', body: JSON.stringify(body) });
+  if (r && !r.error) { cerrarModal('modal-incumplimiento'); cargarIncumplimientos(); }
+}
+async function eliminarIncumplimiento(id) {
+  if (!confirm('¿Eliminar este caso?')) return;
+  await api(`/api/incumplimientos/${id}`, { method:'DELETE' });
+  cargarIncumplimientos();
+}
+
+// ── QUEJAS ──
+async function cargarQuejas() {
+  const data = await api('/api/quejas');
+  if (!data) return;
+  const d = await api('/api/dashboard');
+  const s = d?.quejasStats || {};
+  const set = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+  set('qja-total', s.total||0);
+  set('qja-abiertas', s.abiertas||0);
+  set('qja-proceso', s.en_proceso||0);
+  set('qja-resueltas', s.resueltas||0);
+  set('qja-pct', s.total > 0 ? ((s.resueltas||0)/s.total*100).toFixed(0)+'%' : '—');
+  set('qja-tiempo', d?.tiempoPromQueja?.dias ? Math.round(d.tiempoPromQueja.dias) : '—');
+
+  const TIPOS_Q = { mal_servicio:'Mal servicio', error_contrato:'Error contrato', demora_investigacion:'Demora invest.', inconformidad_dictamen:'Inconformidad dictamen', otro:'Otro' };
+  const tiposEl = document.getElementById('qja-tipos');
+  if (tiposEl) tiposEl.innerHTML = [
+    { l:'Mal servicio', v:s.mal_servicio||0 },
+    { l:'Error contrato', v:s.error_contrato||0 },
+    { l:'Demora invest.', v:s.demora_invest||0 },
+    { l:'Inconformidad dictamen', v:s.inconformidad||0 },
+  ].map(t => `<div class="bar-row"><div class="bar-name">${t.l}</div><div class="bar-track"><div class="bar-fill amber" style="width:${Math.round(t.v/Math.max(s.mal_servicio||0,s.error_contrato||0,s.demora_invest||0,s.inconformidad||0,1)*100)}%"></div></div><div class="bar-pct">${t.v}</div></div>`).join('');
+
+  const asesorEl = document.getElementById('qja-por-asesor');
+  if (asesorEl) {
+    const items = d?.quejasPorAsesor || [];
+    const max = Math.max(...items.map(a=>a.total), 1);
+    asesorEl.innerHTML = items.length
+      ? items.map(a => `<div class="bar-row"><div class="bar-name">${a.asesor_nombre}</div><div class="bar-track"><div class="bar-fill red" style="width:${Math.round(a.total/max*100)}%"></div></div><div class="bar-pct">${a.total}</div></div>`).join('')
+      : '<p style="color:#94a3b8;font-size:12px">Sin datos</p>';
+  }
+
+  const SC = { abierta:'pill-perdido', en_proceso:'pill-proceso', resuelta:'pill-ganado' };
+  const tbody = document.getElementById('qja-tbody');
+  if (tbody) tbody.innerHTML = data.length
+    ? data.map(r => `<tr>
+        <td style="font-weight:600">${r.nombre_reclamante||'—'}</td>
+        <td><span class="pill ${r.tipo_reclamante==='arrendador'?'pill-nuevo':'pill-wa'}">${r.tipo_reclamante||'—'}</span></td>
+        <td style="font-size:11px">${TIPOS_Q[r.tipo]||r.tipo||'—'}</td>
+        <td><span class="pill ${SC[r.estatus]||'pill-incompleto'}">${r.estatus}</span></td>
+        <td style="font-size:11px">${r.asesor_nombre||'—'}</td>
+        <td style="font-size:11px;color:#64748b">${r.fecha_apertura||'—'}</td>
+        <td style="font-size:11px;color:#64748b">${r.fecha_resolucion||'—'}</td>
+        <td><div class="row-actions">
+          <div class="icon-btn" onclick="editarQueja(${r.id})"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
+          <div class="icon-btn danger" onclick="eliminarQueja(${r.id})"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg></div>
+        </div></td>
+      </tr>`).join('')
+    : '<tr><td colspan="8" style="text-align:center;padding:24px;color:#94a3b8;font-size:12px">Sin quejas registradas</td></tr>';
+}
+
+async function abrirNuevaQueja() {
+  ['qja-nombre','qja-descripcion','qja-resolucion'].forEach(id => document.getElementById(id).value = '');
+  ['qja-tipo','qja-estatus'].forEach(id => document.getElementById(id).value = id==='qja-estatus'?'abierta':'');
+  document.getElementById('qja-reclamante').value = 'arrendador';
+  ['qja-fecha-ap','qja-fecha-res'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('qja-id').value = '';
+  document.getElementById('modal-qja-title').textContent = 'Nueva queja';
+  await cargarAsesorSelect('qja-asesor');
+  document.getElementById('modal-queja').classList.add('open');
+}
+async function editarQueja(id) {
+  const r = await api(`/api/quejas/${id}`);
+  if (!r) return;
+  document.getElementById('modal-qja-title').textContent = 'Editar queja';
+  document.getElementById('qja-id').value = r.id;
+  document.getElementById('qja-nombre').value = r.nombre_reclamante||'';
+  document.getElementById('qja-reclamante').value = r.tipo_reclamante||'arrendador';
+  document.getElementById('qja-tipo').value = r.tipo||'';
+  document.getElementById('qja-estatus').value = r.estatus||'abierta';
+  document.getElementById('qja-descripcion').value = r.descripcion||'';
+  document.getElementById('qja-resolucion').value = r.resolucion||'';
+  document.getElementById('qja-fecha-ap').value = r.fecha_apertura||'';
+  document.getElementById('qja-fecha-res').value = r.fecha_resolucion||'';
+  await cargarAsesorSelect('qja-asesor', r.asesor_id);
+  document.getElementById('modal-queja').classList.add('open');
+}
+async function guardarQueja() {
+  const id = document.getElementById('qja-id').value;
+  const asesorSel = document.getElementById('qja-asesor');
+  const body = {
+    nombre_reclamante: document.getElementById('qja-nombre').value,
+    tipo_reclamante: document.getElementById('qja-reclamante').value,
+    tipo: document.getElementById('qja-tipo').value,
+    estatus: document.getElementById('qja-estatus').value,
+    asesor_id: asesorSel.value || null,
+    asesor_nombre: asesorSel.value ? asesorSel.options[asesorSel.selectedIndex].text : '',
+    descripcion: document.getElementById('qja-descripcion').value,
+    resolucion: document.getElementById('qja-resolucion').value,
+    fecha_apertura: document.getElementById('qja-fecha-ap').value,
+    fecha_resolucion: document.getElementById('qja-fecha-res').value,
+  };
+  const r = await api(id ? `/api/quejas/${id}` : '/api/quejas', { method: id?'PUT':'POST', body: JSON.stringify(body) });
+  if (r && !r.error) { cerrarModal('modal-queja'); cargarQuejas(); }
+}
+async function eliminarQueja(id) {
+  if (!confirm('¿Eliminar esta queja?')) return;
+  await api(`/api/quejas/${id}`, { method:'DELETE' });
+  cargarQuejas();
+}
+
+// ── JURÍDICO ──
+async function cargarJuridico() {
+  const data = await api('/api/juridico');
+  if (!data) return;
+  const d = await api('/api/dashboard');
+  const s = d?.juridicoStats || {};
+  const fmt = n => n ? '$'+Number(n).toLocaleString('es-MX',{maximumFractionDigits:0}) : '$0';
+  const set = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+  set('jur-activos', s.activos||0);
+  set('jur-demandas', s.demandas||0);
+  set('jur-noti-mes', d?.juridicoMes||0);
+  set('jur-noti-vs', `vs ${d?.juridicoPasado||0} mes anterior`);
+  set('jur-favorables', s.favorables||0);
+  set('jur-desfavorables', s.desfavorables||0);
+  const pctRec = s.monto_reclamado_sum > 0 ? ((s.monto_recuperado_sum||0)/s.monto_reclamado_sum*100).toFixed(0)+'%' : '—';
+  set('jur-pct-rec', pctRec);
+  set('jur-recuperado', fmt(s.monto_recuperado_sum));
+  set('jur-reclamado', fmt(s.monto_reclamado_sum));
+
+  const TIPOS_J = { demanda:'Demanda', notificacion:'Notificación', conciliacion:'Conciliación' };
+  const SE = { activo:'pill-proceso', resuelto:'pill-ganado', archivado:'pill-incompleto' };
+  const SS = { favorable:'pill-ganado', desfavorable:'pill-perdido', pendiente:'pill-incompleto', acuerdo:'pill-proceso' };
+  const tbody = document.getElementById('jur-tbody');
+  if (tbody) tbody.innerHTML = data.length
+    ? data.map(r => `<tr>
+        <td style="font-size:11px;font-weight:700;color:#0a1f3c">${r.folio||'—'}</td>
+        <td>${r.nombre_arrendatario||'—'}</td>
+        <td style="font-size:11px">${TIPOS_J[r.tipo]||r.tipo||'—'}</td>
+        <td><span class="pill ${SE[r.estatus]||'pill-incompleto'}">${r.estatus}</span></td>
+        <td><span class="pill ${SS[r.sentencia]||'pill-incompleto'}">${r.sentencia||'Pendiente'}</span></td>
+        <td style="font-size:11px">${r.monto_reclamado ? '$'+r.monto_reclamado : '—'}</td>
+        <td style="font-size:11px">${r.monto_recuperado ? '$'+r.monto_recuperado : '—'}</td>
+        <td style="font-size:11px;color:#64748b">${r.fecha_inicio||'—'}</td>
+        <td><div class="row-actions">
+          <div class="icon-btn" onclick="editarCasoJuridico(${r.id})"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
+          <div class="icon-btn danger" onclick="eliminarCasoJuridico(${r.id})"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg></div>
+        </div></td>
+      </tr>`).join('')
+    : '<tr><td colspan="9" style="text-align:center;padding:24px;color:#94a3b8;font-size:12px">Sin casos jurídicos registrados</td></tr>';
+}
+
+function abrirNuevoCasoJuridico() {
+  document.getElementById('modal-jur-title').textContent = 'Nuevo caso jurídico';
+  document.getElementById('jur-id').value = '';
+  ['jur-folio','jur-arrendatario','jur-juzgado','jur-reclamado-inp','jur-recuperado-inp','jur-notas'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('jur-tipo').value = 'demanda';
+  document.getElementById('jur-estatus').value = 'activo';
+  document.getElementById('jur-sentencia').value = 'pendiente';
+  ['jur-fecha-ini','jur-fecha-res'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('modal-juridico').classList.add('open');
+}
+async function editarCasoJuridico(id) {
+  const r = await api(`/api/juridico/${id}`);
+  if (!r) return;
+  document.getElementById('modal-jur-title').textContent = 'Editar caso';
+  document.getElementById('jur-id').value = r.id;
+  document.getElementById('jur-folio').value = r.folio||'';
+  document.getElementById('jur-arrendatario').value = r.nombre_arrendatario||'';
+  document.getElementById('jur-tipo').value = r.tipo||'demanda';
+  document.getElementById('jur-estatus').value = r.estatus||'activo';
+  document.getElementById('jur-sentencia').value = r.sentencia||'pendiente';
+  document.getElementById('jur-juzgado').value = r.juzgado||'';
+  document.getElementById('jur-reclamado-inp').value = r.monto_reclamado||'';
+  document.getElementById('jur-recuperado-inp').value = r.monto_recuperado||'';
+  document.getElementById('jur-fecha-ini').value = r.fecha_inicio||'';
+  document.getElementById('jur-fecha-res').value = r.fecha_resolucion||'';
+  document.getElementById('jur-notas').value = r.notas||'';
+  document.getElementById('modal-juridico').classList.add('open');
+}
+async function guardarCasoJuridico() {
+  const id = document.getElementById('jur-id').value;
+  const body = {
+    folio: document.getElementById('jur-folio').value,
+    nombre_arrendatario: document.getElementById('jur-arrendatario').value,
+    tipo: document.getElementById('jur-tipo').value,
+    estatus: document.getElementById('jur-estatus').value,
+    sentencia: document.getElementById('jur-sentencia').value,
+    juzgado: document.getElementById('jur-juzgado').value,
+    monto_reclamado: document.getElementById('jur-reclamado-inp').value,
+    monto_recuperado: document.getElementById('jur-recuperado-inp').value,
+    fecha_inicio: document.getElementById('jur-fecha-ini').value,
+    fecha_resolucion: document.getElementById('jur-fecha-res').value,
+    notas: document.getElementById('jur-notas').value,
+  };
+  const r = await api(id ? `/api/juridico/${id}` : '/api/juridico', { method: id?'PUT':'POST', body: JSON.stringify(body) });
+  if (r && !r.error) { cerrarModal('modal-juridico'); cargarJuridico(); }
+}
+async function eliminarCasoJuridico(id) {
+  if (!confirm('¿Eliminar este caso?')) return;
+  await api(`/api/juridico/${id}`, { method:'DELETE' });
+  cargarJuridico();
 }
 
 // ── WORKFLOW: links únicos ──

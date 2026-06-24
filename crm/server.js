@@ -16,7 +16,10 @@ app.use('/api/guardias',    require('./routes/guardias'));
 app.use('/api/dashboard',   require('./routes/dashboard'));
 app.use('/api/llamadas',    require('./routes/llamadas'));
 app.use('/api/expedientes', require('./routes/expedientes'));
-app.use('/api/solicitudes', require('./routes/solicitudes'));
+app.use('/api/solicitudes',      require('./routes/solicitudes'));
+app.use('/api/incumplimientos', require('./routes/incumplimientos'));
+app.use('/api/quejas',          require('./routes/quejas'));
+app.use('/api/juridico',        require('./routes/juridico'));
 
 // Portal asesor (link único por token)
 app.get('/s/:token', (req, res) => res.sendFile(path.join(__dirname, 'public', 'portal-asesor.html')));
