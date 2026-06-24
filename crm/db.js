@@ -3,9 +3,7 @@ const path = require('path');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 
-const dbPath = process.env.NODE_ENV === 'production'
-  ? '/data/pjm.db'
-  : path.join(__dirname, '../pjm.db');
+const dbPath = process.env.DB_PATH || path.join(__dirname, '../pjm.db');
 const db = new Database(dbPath);
 db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
