@@ -1,10 +1,10 @@
 const express = require('express');
+const crypto = require('crypto');
 const db = require('../db');
 const { middleware, adminOnly } = require('../auth');
 
 const r = express.Router();
 r.use(middleware);
-r.use(adminOnly);
 
 // ── FOLIO INTELIGENTE ──
 // Todos los documentos de una operación comparten el mismo NNN
@@ -52,6 +52,8 @@ r.get('/', (req, res) => {
   const { estado, search } = req.query;
   let q = 'SELECT * FROM expedientes WHERE 1=1';
   const p = [];
+  // Asesor solo ve sus expedientes
+  if (req.user.rol !== 'admin') { q += ' AND asesor_id = ?'; p.push(req.user.id); }
   if (estado) { q += ' AND estatus_general = ?'; p.push(estado); }
   if (search) {
     q += ` AND (folio LIKE ? OR folio_poliza LIKE ? OR folio_arrendamiento LIKE ?
@@ -112,22 +114,34 @@ r.post('/', (req, res) => {
 });
 
 r.put('/:id', (req, res) => {
+  const exp = db.prepare('SELECT * FROM expedientes WHERE id=?').get(req.params.id);
+  if (!exp) return res.status(404).json({ error: 'No encontrado' });
+  // Asesor solo puede editar sus propios expedientes y campos no financieros
+  if (req.user.rol !== 'admin' && exp.asesor_id !== req.user.id)
+    return res.status(403).json({ error: 'Sin permiso' });
+
   const d = req.body;
-  const fields = [
-    'tipo_contratacion','asesor_id','asesor_nombre',
-    'tipo_inmueble','uso_inmueble','direccion_inmueble','monto_renta',
+  const camposAsesor = [
+    'tipo_contratacion','tipo_inmueble','uso_inmueble','direccion_inmueble','monto_renta',
     'amueblado','inventario','formato_firma',
     'nombre_arrendador','tel_arrendador','email_arrendador',
     'nombre_arrendatario','tel_arrendatario','email_arrendatario',
     'num_arrendadores','num_arrendatarios','num_os','tiene_habitante',
-    'estatus_general','estatus_poliza','estatus_arrendamiento','estatus_expediente','estatus_operacion',
-    'investigacion_aprobada','tipo_poliza',
-    'folio_poliza','folio_arrendamiento','folio_recibo','folio_anexo',
-    'folio_recibo','folio_opinion','folio_devolucion','folio_investigacion',
-    'inicio_poliza','fin_poliza','inicio_arrendamiento','fin_arrendamiento',
-    'os_aval','cantidad_devuelta','motivo_devolucion','fecha_devolucion','notas'
+    'estatus_general','tipo_poliza',
+    'inicio_poliza','fin_poliza','inicio_arrendamiento','fin_arrendamiento','notas'
   ];
-  const unique = [...new Set(fields)];
+  const camposAdmin = [
+    ...camposAsesor,
+    'asesor_id','asesor_nombre',
+    'estatus_poliza','estatus_arrendamiento','estatus_expediente','estatus_operacion',
+    'investigacion_aprobada','resultado_opinion','workflow_etapa',
+    'folio_poliza','folio_arrendamiento','folio_recibo','folio_anexo',
+    'folio_opinion','folio_devolucion','folio_investigacion',
+    'os_aval','cantidad_devuelta','motivo_devolucion','fecha_devolucion',
+    'ingreso_total','comision_porcentaje','comision_monto'
+  ];
+  const campos = req.user.rol === 'admin' ? camposAdmin : camposAsesor;
+  const unique = [...new Set(campos)];
   const sets = unique.filter(f => d[f] !== undefined).map(f => `${f}=?`);
   const vals = unique.filter(f => d[f] !== undefined).map(f => d[f]);
   if (sets.length) {
@@ -135,6 +149,34 @@ r.put('/:id', (req, res) => {
     db.prepare(`UPDATE expedientes SET ${sets.join(',')} WHERE id=?`).run(...vals, req.params.id);
   }
   res.json(db.prepare('SELECT * FROM expedientes WHERE id=?').get(req.params.id));
+});
+
+// ── WORKFLOW: enviar link al arrendatario ──
+r.post('/:id/link-arrendatario', (req, res) => {
+  const exp = db.prepare('SELECT * FROM expedientes WHERE id=?').get(req.params.id);
+  if (!exp) return res.status(404).json({ error: 'No encontrado' });
+  if (req.user.rol !== 'admin' && exp.asesor_id !== req.user.id)
+    return res.status(403).json({ error: 'Sin permiso' });
+  let token = exp.token_arrendatario;
+  if (!token) {
+    token = crypto.randomBytes(20).toString('hex');
+    db.prepare('UPDATE expedientes SET token_arrendatario=?, workflow_etapa="arrendatario_enviado" WHERE id=?').run(token, exp.id);
+  }
+  const host = process.env.APP_URL || `http://localhost:${process.env.PORT||3001}`;
+  res.json({ link: `${host}/solicitud.html?token_exp=${token}&etapa=arrendatario`, token });
+});
+
+// ── WORKFLOW: enviar link al arrendador (solo si opinión es positiva) ──
+r.post('/:id/link-arrendador', adminOnly, (req, res) => {
+  const exp = db.prepare('SELECT * FROM expedientes WHERE id=?').get(req.params.id);
+  if (!exp) return res.status(404).json({ error: 'No encontrado' });
+  let token = exp.token_arrendador;
+  if (!token) {
+    token = crypto.randomBytes(20).toString('hex');
+    db.prepare('UPDATE expedientes SET token_arrendador=?, workflow_etapa="arrendador_enviado" WHERE id=?').run(token, exp.id);
+  }
+  const host = process.env.APP_URL || `http://localhost:${process.env.PORT||3001}`;
+  res.json({ link: `${host}/solicitud.html?token_exp=${token}&etapa=arrendador`, token });
 });
 
 r.delete('/:id', (req, res) => {

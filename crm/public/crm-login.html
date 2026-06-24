@@ -42,24 +42,40 @@ input::placeholder{color:rgba(192,200,216,.3)}
     <label>Contraseña</label>
     <input type="password" id="pass" placeholder="••••••••" autocomplete="current-password">
   </div>
+  <div class="form-group" id="sobre-group" style="display:none">
+    <label>Sobrecontraseña</label>
+    <input type="password" id="sobre" placeholder="Tu PIN de seguridad" autocomplete="off">
+  </div>
   <button class="btn" id="btn" onclick="login()">Entrar al CRM</button>
   <div class="back"><a href="/">← Volver a polizasjuridicasmonterrey.com</a></div>
 </div>
 <script>
+  document.getElementById('sobre').addEventListener('keydown', e => e.key==='Enter' && login());
   document.getElementById('pass').addEventListener('keydown', e => e.key==='Enter' && login());
   if (localStorage.getItem('pjm_token')) window.location.href = '/crm.html';
   async function login() {
     const email = document.getElementById('email').value.trim();
     const pass  = document.getElementById('pass').value;
+    const sobre = document.getElementById('sobre').value;
     const btn   = document.getElementById('btn');
     const err   = document.getElementById('err');
     err.style.display = 'none';
     if (!email || !pass) { showErr('Ingresa tu correo y contraseña'); return; }
     btn.disabled = true; btn.textContent = 'Verificando...';
     try {
-      const r = await fetch('/api/auth/login', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({email, password: pass}) });
+      const body = { email, password: pass };
+      if (sobre) body.sobre_password = sobre;
+      const r = await fetch('/api/auth/login', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
       const data = await r.json();
-      if (!r.ok) { showErr(data.error || 'Credenciales incorrectas'); return; }
+      if (!r.ok) {
+        if (data.error === 'sobre_password_requerida') {
+          document.getElementById('sobre-group').style.display = '';
+          showErr(data.mensaje || 'Ingresa tu sobrecontraseña');
+          document.getElementById('sobre').focus();
+          return;
+        }
+        showErr(data.error || 'Credenciales incorrectas'); return;
+      }
       localStorage.setItem('pjm_token', data.token);
       localStorage.setItem('pjm_user', JSON.stringify(data.user));
       window.location.href = '/crm.html';

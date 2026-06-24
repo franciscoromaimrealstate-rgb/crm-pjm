@@ -183,21 +183,50 @@ CREATE TABLE IF NOT EXISTS recordatorios (
 );
 `);
 
-// Migraciones: agregar columnas si no existen
-try { db.exec('ALTER TABLE usuarios ADD COLUMN token TEXT'); } catch {}
-try { db.exec('ALTER TABLE usuarios ADD COLUMN inmobiliaria TEXT DEFAULT ""'); } catch {}
-try { db.exec('ALTER TABLE usuarios ADD COLUMN telefono TEXT DEFAULT ""'); } catch {}
-try { db.exec('ALTER TABLE expedientes ADD COLUMN num_op INTEGER'); } catch {}
-try { db.exec('ALTER TABLE expedientes ADD COLUMN nombre_arrendador TEXT DEFAULT ""'); } catch {}
-try { db.exec('ALTER TABLE expedientes ADD COLUMN tel_arrendador TEXT DEFAULT ""'); } catch {}
-try { db.exec('ALTER TABLE expedientes ADD COLUMN email_arrendador TEXT DEFAULT ""'); } catch {}
-try { db.exec('ALTER TABLE expedientes ADD COLUMN nombre_arrendatario TEXT DEFAULT ""'); } catch {}
-try { db.exec('ALTER TABLE expedientes ADD COLUMN tel_arrendatario TEXT DEFAULT ""'); } catch {}
-try { db.exec('ALTER TABLE expedientes ADD COLUMN email_arrendatario TEXT DEFAULT ""'); } catch {}
-try { db.exec('ALTER TABLE expedientes ADD COLUMN folio_investigacion TEXT DEFAULT ""'); } catch {}
-try { db.exec('ALTER TABLE expedientes ADD COLUMN folio_anexo TEXT DEFAULT ""'); } catch {}
-try { db.exec('ALTER TABLE expedientes ADD COLUMN estatus_expediente TEXT DEFAULT ""'); } catch {}
-try { db.exec('ALTER TABLE expedientes ADD COLUMN estatus_operacion TEXT DEFAULT ""'); } catch {}
+// ── Tabla notas de leads (append-only) ──
+db.exec(`
+CREATE TABLE IF NOT EXISTS lead_notas (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  lead_id INTEGER NOT NULL REFERENCES leads(id),
+  texto TEXT NOT NULL,
+  usuario_nombre TEXT DEFAULT '',
+  fecha DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+`);
+
+// ── Migraciones: agregar columnas si no existen ──
+const migs = [
+  // usuarios
+  'ALTER TABLE usuarios ADD COLUMN token TEXT',
+  'ALTER TABLE usuarios ADD COLUMN inmobiliaria TEXT DEFAULT ""',
+  'ALTER TABLE usuarios ADD COLUMN telefono TEXT DEFAULT ""',
+  'ALTER TABLE usuarios ADD COLUMN sobre_password_hash TEXT',
+  // expedientes — partes
+  'ALTER TABLE expedientes ADD COLUMN num_op INTEGER',
+  'ALTER TABLE expedientes ADD COLUMN nombre_arrendador TEXT DEFAULT ""',
+  'ALTER TABLE expedientes ADD COLUMN tel_arrendador TEXT DEFAULT ""',
+  'ALTER TABLE expedientes ADD COLUMN email_arrendador TEXT DEFAULT ""',
+  'ALTER TABLE expedientes ADD COLUMN nombre_arrendatario TEXT DEFAULT ""',
+  'ALTER TABLE expedientes ADD COLUMN tel_arrendatario TEXT DEFAULT ""',
+  'ALTER TABLE expedientes ADD COLUMN email_arrendatario TEXT DEFAULT ""',
+  // expedientes — folios
+  'ALTER TABLE expedientes ADD COLUMN folio_investigacion TEXT DEFAULT ""',
+  'ALTER TABLE expedientes ADD COLUMN folio_anexo TEXT DEFAULT ""',
+  // expedientes — estatus
+  'ALTER TABLE expedientes ADD COLUMN estatus_expediente TEXT DEFAULT ""',
+  'ALTER TABLE expedientes ADD COLUMN estatus_operacion TEXT DEFAULT ""',
+  // expedientes — opinión
+  'ALTER TABLE expedientes ADD COLUMN resultado_opinion TEXT DEFAULT ""',
+  // expedientes — financiero
+  'ALTER TABLE expedientes ADD COLUMN ingreso_total TEXT DEFAULT ""',
+  'ALTER TABLE expedientes ADD COLUMN comision_porcentaje TEXT DEFAULT ""',
+  'ALTER TABLE expedientes ADD COLUMN comision_monto TEXT DEFAULT ""',
+  // expedientes — workflow
+  'ALTER TABLE expedientes ADD COLUMN workflow_etapa TEXT DEFAULT "nuevo"',
+  'ALTER TABLE expedientes ADD COLUMN token_arrendatario TEXT',
+  'ALTER TABLE expedientes ADD COLUMN token_arrendador TEXT',
+];
+for (const m of migs) { try { db.exec(m); } catch {} }
 
 // Seed admin
 const admin = db.prepare('SELECT id FROM usuarios WHERE rol = ?').get('admin');
