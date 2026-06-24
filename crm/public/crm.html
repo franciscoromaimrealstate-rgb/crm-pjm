@@ -211,6 +211,27 @@ tr:hover td{background:#f8fafc}
 .folio-searchbar svg{width:16px;height:16px;fill:none;stroke:#94a3b8;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
 .folio-searchbar input{border:none;outline:none;font-size:13px;font-family:monospace;font-weight:600;color:var(--navy);background:none;flex:1;text-transform:uppercase}
 .folio-searchbar input::placeholder{font-family:'Segoe UI',system-ui,sans-serif;font-weight:400;text-transform:none;color:#94a3b8}
+/* KANBAN */
+.kanban-col{background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px}
+.kanban-col-header{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#64748b;display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding:0 2px}
+.kanban-col-count{background:#e2e8f0;color:#64748b;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700}
+.kanban-card{background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:10px 12px;margin-bottom:8px;cursor:pointer;transition:all .15s;border-left:3px solid transparent}
+.kanban-card:hover{box-shadow:0 2px 8px rgba(0,0,0,.08);transform:translateY(-1px)}
+.kanban-card-name{font-size:12px;font-weight:700;color:#1a2d4a;margin-bottom:3px}
+.kanban-card-sub{font-size:10px;color:#94a3b8;margin-bottom:6px}
+.kanban-card-footer{display:flex;align-items:center;justify-content:space-between}
+/* TEMPERATURA */
+.temp-dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0}
+.temp-caliente{background:#ef4444}
+.temp-tibio{background:#f59e0b}
+.temp-frio{background:#94a3b8}
+.temp-ganado{background:#22c55e}
+.temp-perdido{background:#ef4444;opacity:.5}
+/* DIAS BADGE */
+.dias-badge{font-size:9px;font-weight:700;border-radius:6px;padding:2px 6px;white-space:nowrap}
+.dias-ok{background:#dcfce7;color:#15803d}
+.dias-warn{background:#fef3c7;color:#92400e}
+.dias-danger{background:#fee2e2;color:#dc2626}
 @media(max-width:768px){
   #sidebar{width:60px}
   .sb-brand-name,.sb-brand-sub,.nav-item span,.sb-user-name,.sb-user-role,.nav-section,.sb-logout span{display:none}
@@ -252,10 +273,6 @@ tr:hover td{background:#f8fafc}
       <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       <span>Leads</span>
       <span class="nav-badge" id="badge-leads">0</span>
-    </div>
-    <div class="nav-item" onclick="nav('llamadas')">
-      <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.39 18a19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 3.18 2 2 0 0 1 4.11 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-      <span>Llamadas</span>
     </div>
     <div class="nav-section"><span>Expedientes</span></div>
     <div class="nav-item admin-only" onclick="nav('expedientes')">
@@ -457,52 +474,77 @@ tr:hover td{background:#f8fafc}
 
     <!-- LEADS -->
     <div id="page-leads" class="page">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:gap 8px">
-        <div class="tabs" id="lead-tabs">
-          <div class="tab active" onclick="filterTipo('todos')">Todos</div>
-          <div class="tab" onclick="filterTipo('arrendador')">Arrendadores</div>
-          <div class="tab" onclick="filterTipo('arrendatario')">Arrendatarios</div>
-          <div class="tab" onclick="filterTipo('asesor')">Asesores</div>
+      <!-- Filtros -->
+      <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:12px 16px;margin-bottom:14px;display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+        <div class="search-bar" style="min-width:200px;flex:1"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input id="leads-search" placeholder="Nombre, teléfono, LID..." oninput="cargarLeads()"></div>
+        <select class="form-input form-select" id="filter-estado" onchange="cargarLeads()" style="width:140px;padding:7px 28px 7px 10px;font-size:12px">
+          <option value="">Todos los estados</option>
+          <option>Nuevo</option><option>En Proceso</option><option>Ganado</option><option>Perdido</option><option>Incompleto</option>
+        </select>
+        <select class="form-input form-select" id="filter-tipo" onchange="cargarLeads()" style="width:130px;padding:7px 28px 7px 10px;font-size:12px">
+          <option value="">Todos los tipos</option>
+          <option value="arrendador">Arrendador</option>
+          <option value="arrendatario">Arrendatario</option>
+          <option value="asesor">Asesor</option>
+        </select>
+        <select class="form-input form-select" id="filter-fuente" onchange="cargarLeads()" style="width:130px;padding:7px 28px 7px 10px;font-size:12px">
+          <option value="">Toda fuente</option>
+          <option value="whatsapp">WhatsApp</option>
+          <option value="llamada">Llamada</option>
+          <option value="directo">Directo</option>
+          <option value="referido">Referido</option>
+          <option value="manual">Manual</option>
+        </select>
+        <select class="form-input form-select" id="filter-intencion" onchange="cargarLeads()" style="width:150px;padding:7px 28px 7px 10px;font-size:12px">
+          <option value="">Toda intención</option>
+          <option value="cotizar_poliza">Póliza</option>
+          <option value="cotizar_invest">Investigaciones</option>
+          <option value="cotizar_seguros">Seguros</option>
+          <option value="cotizar_contrato">Contrato</option>
+          <option value="cotizar_ratif">Ratificación</option>
+          <option value="administracion">Administración</option>
+          <option value="estatus">Estatus</option>
+        </select>
+        <select class="form-input form-select admin-only" id="filter-asesor-leads" onchange="cargarLeads()" style="width:150px;padding:7px 28px 7px 10px;font-size:12px">
+          <option value="">Todos los asesores</option>
+        </select>
+        <input class="form-input" id="filter-desde" type="date" onchange="cargarLeads()" style="width:130px;padding:7px 10px;font-size:12px" title="Desde">
+        <input class="form-input" id="filter-hasta" type="date" onchange="cargarLeads()" style="width:130px;padding:7px 10px;font-size:12px" title="Hasta">
+        <button class="btn btn-ghost" onclick="limpiarFiltrosLeads()" style="font-size:11px;padding:6px 10px">✕ Limpiar</button>
+        <button class="btn btn-primary" onclick="abrirNuevoLead()" style="margin-left:auto">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Nuevo lead
+        </button>
+      </div>
+      <!-- Resumen rápido -->
+      <div id="leads-kpi-bar" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap"></div>
+      <!-- Vista tabs -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div class="tabs" style="margin-bottom:0">
+          <div class="tab active" id="lv-tab-tabla" onclick="setLeadView('tabla',this)">Tabla</div>
+          <div class="tab" id="lv-tab-kanban" onclick="setLeadView('kanban',this)">Kanban</div>
         </div>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <div class="search-bar"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input id="search-input" placeholder="Buscar nombre, tel, LID..." oninput="buscarLeads()"></div>
-          <select class="form-input form-select" id="filter-estado" onchange="cargarLeads()" style="width:140px;padding:7px 28px 7px 10px;font-size:12px">
-            <option value="">Todos los estados</option>
-            <option>Iniciado</option><option>Nuevo</option><option>En Proceso</option><option>Ganado</option><option>Perdido</option><option>Incompleto</option>
-          </select>
-          <button class="btn btn-primary" onclick="abrirNuevoLead()">
-            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Nuevo lead
-          </button>
+        <div style="font-size:11px;color:#94a3b8" id="leads-count-label"></div>
+      </div>
+      <!-- Vista tabla -->
+      <div id="lv-tabla">
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th></th><th>LID</th><th>Nombre</th><th>Teléfono</th><th>Servicio</th><th>Asesor</th><th>Canal</th><th>Estado</th><th>Último contacto</th><th>Próx. seguimiento</th><th>Sin actividad</th><th></th></tr></thead>
+              <tbody id="leads-tbody"></tbody>
+            </table>
+          </div>
         </div>
       </div>
-      <div class="card">
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>LID</th><th>Nombre</th><th>Teléfono</th><th>Tipo</th><th>Intención</th><th>Asesor</th><th>Fuente</th><th>Estado</th><th>Fecha</th><th></th></tr></thead>
-            <tbody id="leads-tbody"></tbody>
-          </table>
-        </div>
+      <!-- Vista kanban -->
+      <div id="lv-kanban" style="display:none">
+        <div id="kanban-board" style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;align-items:start"></div>
       </div>
     </div>
 
-    <!-- LLAMADAS -->
-    <div id="page-llamadas" class="page">
-      <div style="display:flex;justify-content:flex-end;margin-bottom:14px">
-        <button class="btn btn-primary" onclick="abrirNuevoLlamada()">
-          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Registrar llamada
-        </button>
-      </div>
-      <div class="card">
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Fecha</th><th>Asesor</th><th>Cliente</th><th>Teléfono</th><th>Tipo</th><th>Intención</th><th>Resultado</th><th>¿Cotizar?</th><th>Notas</th></tr></thead>
-            <tbody id="llamadas-tbody"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+    <!-- LLAMADAS (oculta — datos históricos) -->
+    <div id="page-llamadas" class="page" style="display:none"></div>
 
     <!-- GUARDIAS -->
     <div id="page-guardias" class="page admin-only">
@@ -756,18 +798,54 @@ tr:hover td{background:#f8fafc}
 
 <!-- MODALS -->
 <div class="modal-overlay" id="modal-lead">
-  <div class="modal">
-    <div class="modal-title"><span id="modal-lead-title">Nuevo lead</span><svg onclick="cerrarModal('modal-lead')" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+  <div class="modal" style="max-width:580px">
+    <div class="modal-title">
+      <span id="modal-lead-title">Nuevo lead</span>
+      <div style="display:flex;align-items:center;gap:6px">
+        <div id="lead-wa-btn" style="display:none">
+          <a id="lead-wa-link" href="#" target="_blank" style="background:#25d366;color:#fff;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;text-decoration:none;display:flex;align-items:center;gap:4px">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.122.549 4.112 1.505 5.843L0 24l6.335-1.483A11.944 11.944 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 0 1-5.016-1.374l-.36-.213-3.732.873.898-3.638-.235-.373A9.818 9.818 0 1 1 12 21.818z"/></svg>
+            WA
+          </a>
+        </div>
+        <svg onclick="cerrarModal('modal-lead')" viewBox="0 0 24 24" style="width:16px;height:16px;cursor:pointer;fill:none;stroke:#94a3b8;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </div>
+    </div>
     <input type="hidden" id="lead-id">
     <div class="form-grid">
       <div class="form-group"><label class="form-label">Nombre</label><input class="form-input" id="lead-nombre" placeholder="Nombre completo"></div>
       <div class="form-group"><label class="form-label">Tipo</label>
-        <select class="form-input form-select" id="lead-tipo"><option value="">— Selecciona —</option><option value="arrendador">Arrendador</option><option value="arrendatario">Arrendatario</option><option value="asesor">Asesor</option></select>
+        <select class="form-input form-select" id="lead-tipo">
+          <option value="">— Selecciona —</option>
+          <option value="arrendador">Arrendador</option>
+          <option value="arrendatario">Arrendatario</option>
+          <option value="asesor">Asesor</option>
+        </select>
       </div>
       <div class="form-group"><label class="form-label">Teléfono WhatsApp</label><input class="form-input" id="lead-telwa" placeholder="8121234567"></div>
       <div class="form-group"><label class="form-label">Teléfono contacto</label><input class="form-input" id="lead-telc" placeholder="8121234567"></div>
-      <div class="form-group"><label class="form-label">Intención</label>
-        <select class="form-input form-select" id="lead-intencion"><option value="">— Selecciona —</option><option>cotizar_poliza</option><option>cotizar_invest</option><option>cotizar_seguros</option><option>cotizar_contrato</option><option>cotizar_ratif</option><option>administracion</option><option>estatus</option><option>hablar_agente</option><option>alta_agente</option></select>
+      <div class="form-group"><label class="form-label">Canal de contacto</label>
+        <select class="form-input form-select" id="lead-fuente">
+          <option value="manual">Manual</option>
+          <option value="whatsapp">WhatsApp</option>
+          <option value="llamada">Llamada telefónica</option>
+          <option value="directo">Directo / Presencial</option>
+          <option value="referido">Referido</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Servicio de interés</label>
+        <select class="form-input form-select" id="lead-intencion">
+          <option value="">— Selecciona —</option>
+          <option value="cotizar_poliza">Póliza jurídica</option>
+          <option value="cotizar_invest">Investigación</option>
+          <option value="cotizar_seguros">Seguro de arrendamiento</option>
+          <option value="cotizar_contrato">Contrato sin póliza</option>
+          <option value="cotizar_ratif">Ratificación</option>
+          <option value="administracion">Administración de inmueble</option>
+          <option value="estatus">Consulta de estatus</option>
+          <option value="hablar_agente">Hablar con agente</option>
+          <option value="alta_agente">Alta de asesor</option>
+        </select>
       </div>
       <div class="form-group"><label class="form-label">Renta mensual</label><input class="form-input" id="lead-renta" placeholder="15000"></div>
       <div class="form-group"><label class="form-label">Tipo inmueble</label><input class="form-input" id="lead-inmueble" placeholder="Casa, Departamento..."></div>
@@ -776,15 +854,33 @@ tr:hover td{background:#f8fafc}
         <select class="form-input form-select" id="lead-asesor"><option value="">— Selecciona —</option></select>
       </div>
       <div class="form-group"><label class="form-label">Estado del lead</label>
-        <select class="form-input form-select" id="lead-estado"><option value="Nuevo">Nuevo</option><option value="En Proceso">En Proceso</option><option value="Ganado">Ganado</option><option value="Perdido">Perdido</option><option value="Incompleto">Incompleto</option></select>
+        <select class="form-input form-select" id="lead-estado">
+          <option value="Nuevo">Nuevo</option>
+          <option value="En Proceso">En Proceso</option>
+          <option value="Ganado">Ganado</option>
+          <option value="Perdido">Perdido</option>
+          <option value="Incompleto">Incompleto</option>
+        </select>
       </div>
-      <div class="form-group full"><label class="form-label">Próximo seguimiento</label><input class="form-input" id="lead-seguimiento" type="date"></div>
+      <div class="form-group"><label class="form-label">Próximo seguimiento</label><input class="form-input" id="lead-seguimiento" type="date"></div>
       <div class="form-group full"><label class="form-label">Plan vendido</label><input class="form-input" id="lead-plan" placeholder="Plan Básico, Plus, Premium..."></div>
       <div class="form-group full"><label class="form-label">Notas</label><textarea class="form-input" id="lead-notas" rows="2" placeholder="Observaciones..."></textarea></div>
       <div class="form-group full" id="motivo-group" style="display:none"><label class="form-label">Motivo de pérdida</label><input class="form-input" id="lead-motivo" placeholder="¿Por qué se perdió?"></div>
     </div>
+    <!-- Timeline de notas (solo en edición) -->
+    <div id="lead-timeline-section" style="display:none;margin-top:14px">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8;margin-bottom:8px;display:flex;align-items:center;gap:6px">Historial de actividad <span style="flex:1;height:1px;background:#f1f5f9"></span></div>
+      <div id="lead-timeline" style="max-height:180px;overflow-y:auto;margin-bottom:10px"></div>
+      <div style="display:flex;gap:6px">
+        <textarea class="form-input" id="lead-notas-nueva" rows="1" placeholder="Agregar nota al historial..." style="flex:1;resize:none;font-size:12px"></textarea>
+        <button class="btn btn-ghost" style="font-size:11px;padding:6px 10px;align-self:flex-end" onclick="agregarNotaDesdeModal()">+ Nota</button>
+      </div>
+    </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="cerrarModal('modal-lead')">Cancelar</button>
+      <button class="btn btn-ghost admin-only" id="btn-convertir-exp" style="display:none;background:#f0f4ff;color:#2563eb;border-color:#c7d7ff" onclick="convertirLeadAExpediente()">
+        ⚡ Convertir a expediente
+      </button>
       <button class="btn btn-primary" onclick="guardarLead()">Guardar</button>
     </div>
   </div>
@@ -1169,7 +1265,10 @@ function nav(page) {
   const titles = {dashboard:'Dashboard',leads:'Leads',llamadas:'Llamadas',guardias:'Guardias',asesores:'Asesores',expedientes:'Expedientes',solicitudes:'Solicitudes',recordatorios:'Recordatorios',cancelaciones:'Cancelaciones',incumplimientos:'Incumplimientos',quejas:'Quejas',juridico:'Jurídico'};
   document.getElementById('page-title').textContent = titles[page] || page;
   if (page === 'dashboard') cargarDashboard();
-  if (page === 'leads') cargarLeads();
+  if (page === 'leads') {
+    if (USER.rol === 'admin') cargarAsesorSelect('filter-asesor-leads');
+    cargarLeads();
+  }
   if (page === 'llamadas') cargarLlamadas();
   if (page === 'guardias') cargarGuardias();
   if (page === 'asesores') cargarAsesores();
@@ -1406,64 +1505,150 @@ async function cargarDashboard() {
 }
 
 // ── LEADS ──
+// ── LEADS — helpers ──
+function diasSinActividad(updated_at) {
+  if (!updated_at) return 999;
+  return Math.floor((Date.now() - new Date(updated_at).getTime()) / 86400000);
+}
+function tempDot(l) {
+  if (l.estado === 'Ganado') return '<span class="temp-dot temp-ganado" title="Ganado"></span>';
+  if (l.estado === 'Perdido') return '<span class="temp-dot temp-perdido" title="Perdido"></span>';
+  const d = diasSinActividad(l.updated_at || l.fecha);
+  if (d < 1) return '<span class="temp-dot temp-caliente" title="Caliente"></span>';
+  if (d <= 3) return '<span class="temp-dot temp-tibio" title="Tibio"></span>';
+  return '<span class="temp-dot temp-frio" title="Frío"></span>';
+}
+function diasBadge(l) {
+  if (l.estado === 'Ganado' || l.estado === 'Perdido') return '';
+  const d = diasSinActividad(l.updated_at || l.fecha);
+  const cls = d < 1 ? 'dias-ok' : d <= 3 ? 'dias-warn' : 'dias-danger';
+  return `<span class="dias-badge ${cls}">${d}d</span>`;
+}
+function waBtn(tel) {
+  if (!tel) return '';
+  const num = tel.replace('@c.us','').replace(/\D/g,'');
+  return `<a href="https://wa.me/52${num}" target="_blank" class="icon-btn" title="WhatsApp" style="background:#dcfce7;color:#15803d;border-color:#bbf7d0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></a>`;
+}
+
+// ── LEADS — cargar con todos los filtros ──
 async function cargarLeads() {
-  const estado = document.getElementById('filter-estado').value;
-  let url = '/api/leads?';
-  if (estado) url += `estado=${encodeURIComponent(estado)}&`;
-  const data = await api(url);
+  const p = new URLSearchParams();
+  const v = id => document.getElementById(id)?.value || '';
+  if (v('filter-estado')) p.set('estado', v('filter-estado'));
+  if (v('filter-fuente')) p.set('fuente', v('filter-fuente'));
+  if (v('filter-asesor-leads')) p.set('asesor_id', v('filter-asesor-leads'));
+  if (v('filter-intencion')) p.set('intencion', v('filter-intencion'));
+  if (v('leads-search')) p.set('search', v('leads-search'));
+  if (v('filter-desde')) p.set('desde', v('filter-desde'));
+  if (v('filter-hasta')) p.set('hasta', v('filter-hasta'));
+  const data = await api('/api/leads?' + p.toString());
   if (!data) return;
   allLeads = data;
-  renderLeads();
+  renderLeadsKpi(data);
+  const view = document.getElementById('lv-kanban')?.style.display === 'none' ? 'tabla' : 'kanban';
+  if (view === 'kanban') renderKanban(data);
+  else renderLeads(data);
 }
 
-function filterTipo(tipo) {
-  currentTipo = tipo;
-  document.querySelectorAll('#lead-tabs .tab').forEach(t => t.classList.remove('active'));
-  event.target.classList.add('active');
-  renderLeads();
+function limpiarFiltrosLeads() {
+  ['filter-estado','filter-fuente','filter-asesor-leads','filter-intencion','filter-desde','filter-hasta'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  const s = document.getElementById('leads-search'); if (s) s.value = '';
+  cargarLeads();
 }
 
-function buscarLeads() { renderLeads(); }
+function renderLeadsKpi(data) {
+  const el = document.getElementById('leads-kpi-bar');
+  if (!el) return;
+  const total = data.length;
+  const sinSeg = data.filter(l => diasSinActividad(l.updated_at||l.fecha) > 3 && l.estado !== 'Ganado' && l.estado !== 'Perdido').length;
+  const cal = data.filter(l => diasSinActividad(l.updated_at||l.fecha) < 1 && l.estado !== 'Ganado' && l.estado !== 'Perdido').length;
+  const gan = data.filter(l => l.estado === 'Ganado').length;
+  el.innerHTML = `
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:8px 14px;font-size:11px"><span style="font-weight:700;font-size:16px;color:#0a1f3c;display:block">${total}</span>Mostrando</div>
+      <div style="background:#fef3c7;border:1px solid #fde68a;border-radius:8px;padding:8px 14px;font-size:11px;color:#92400e"><span style="font-weight:700;font-size:16px;display:block">${sinSeg}</span>Sin seguimiento +3d</div>
+      <div style="background:#fee2e2;border:1px solid #fecaca;border-radius:8px;padding:8px 14px;font-size:11px;color:#dc2626"><span style="font-weight:700;font-size:16px;display:block">${cal}</span>Calientes hoy</div>
+      <div style="background:#dcfce7;border:1px solid #bbf7d0;border-radius:8px;padding:8px 14px;font-size:11px;color:#15803d"><span style="font-weight:700;font-size:16px;display:block">${gan}</span>Ganados</div>
+    </div>`;
+}
 
-function renderLeads() {
-  const search = (document.getElementById('search-input').value || '').toLowerCase();
-  let filtered = allLeads;
-  if (currentTipo !== 'todos') filtered = filtered.filter(l => l.tipo_usuario === currentTipo);
-  if (search) filtered = filtered.filter(l =>
-    (l.nombre||'').toLowerCase().includes(search) ||
-    (l.telefono_wa||'').includes(search) ||
-    (l.lid||'').toLowerCase().includes(search) ||
-    (l.telefono_contacto||'').includes(search)
-  );
+function renderLeads(data) {
+  let src = data || allLeads;
+  const tipo = document.getElementById('filter-tipo')?.value;
+  if (tipo) src = src.filter(l => l.tipo_usuario === tipo);
   const tbody = document.getElementById('leads-tbody');
-  if (!filtered.length) { tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:32px;color:#94a3b8;font-size:12px">Sin leads</td></tr>`; return; }
-  tbody.innerHTML = filtered.map(l => `
-    <tr>
+  if (!tbody) return;
+  if (!src.length) { tbody.innerHTML = `<tr><td colspan="12" style="text-align:center;padding:32px;color:#94a3b8;font-size:12px">Sin leads</td></tr>`; return; }
+  tbody.innerHTML = src.map(l => {
+    const tel = l.telefono_wa ? l.telefono_wa.replace('@c.us','') : (l.telefono_contacto||'');
+    const proxSeg = l.prox_seguimiento ? `<span style="font-size:10px;color:#0a1f3c">${l.prox_seguimiento}</span>` : '<span style="color:#cbd5e1;font-size:10px">—</span>';
+    return `<tr>
+      <td style="padding:8px 6px">${tempDot(l)}</td>
       <td style="font-size:10px;color:#94a3b8;font-weight:600">${l.lid||'—'}</td>
-      <td style="font-weight:600">${l.nombre||'Sin nombre'}</td>
-      <td style="color:#64748b">${l.telefono_wa ? l.telefono_wa.replace('@c.us','') : (l.telefono_contacto||'—')}</td>
-      <td>${tipoLabel(l.tipo_usuario)}</td>
-      <td>${intencionLabel(l.intencion)}</td>
-      <td><div style="display:flex;align-items:center;gap:5px"><div style="width:22px;height:22px;border-radius:50%;background:#0a1f3c;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#c0c8d8;flex-shrink:0">${(l.asesor_nombre||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}</div><span style="font-size:11px">${l.asesor_nombre||'Sin asignar'}</span></div></td>
+      <td style="font-weight:600;max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${l.nombre||'Sin nombre'}</td>
+      <td style="color:#64748b;font-size:11px">${tel||'—'}</td>
+      <td style="font-size:11px;color:#475569">${intencionLabel(l.intencion)}</td>
+      <td><div style="display:flex;align-items:center;gap:4px"><div style="width:20px;height:20px;border-radius:50%;background:#0a1f3c;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;color:#c0c8d8;flex-shrink:0">${(l.asesor_nombre||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}</div><span style="font-size:10px">${l.asesor_nombre||'—'}</span></div></td>
       <td>${fuentePill(l.fuente)}</td>
       <td>${estadoPill(l.estado)}</td>
-      <td style="font-size:10px;color:#94a3b8;white-space:nowrap">${fechaCorta(l.fecha)}</td>
-      <td><div class="row-actions">
-        <div class="icon-btn" onclick="editarLead(${l.id})" title="Editar/Ver"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
-        <div class="icon-btn" onclick="verNotasLead(${l.id},'${(l.nombre||'').replace(/'/g,'')}')" title="Notas"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 0 2 2z"/></svg></div>
+      <td style="font-size:10px;color:#64748b;white-space:nowrap">${fechaCorta(l.updated_at||l.fecha)}</td>
+      <td>${proxSeg}</td>
+      <td>${diasBadge(l)}</td>
+      <td><div class="row-actions" style="gap:4px">
+        ${waBtn(tel)}
+        <div class="icon-btn" onclick="editarLead(${l.id})" title="Ver/Editar"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
       </div></td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
+}
+
+function setLeadView(view, el) {
+  ['lv-tab-tabla','lv-tab-kanban'].forEach(id => document.getElementById(id)?.classList.remove('active'));
+  if (el) el.classList.add('active');
+  document.getElementById('lv-tabla').style.display = view === 'tabla' ? '' : 'none';
+  document.getElementById('lv-kanban').style.display = view === 'kanban' ? '' : 'none';
+  if (view === 'kanban') renderKanban(allLeads);
+  else renderLeads(allLeads);
+}
+
+function renderKanban(data) {
+  const board = document.getElementById('kanban-board');
+  if (!board) return;
+  const cols = ['Nuevo','En Proceso','Ganado','Perdido','Incompleto'];
+  board.innerHTML = cols.map(estado => {
+    const items = (data||allLeads).filter(l => l.estado === estado);
+    const cards = items.map(l => {
+      const tel = l.telefono_wa ? l.telefono_wa.replace('@c.us','') : (l.telefono_contacto||'');
+      return `<div class="kanban-card" onclick="editarLead(${l.id})">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+          <span style="font-size:10px;color:#94a3b8">${l.lid||''}</span>
+          ${tempDot(l)} ${diasBadge(l)}
+        </div>
+        <div style="font-weight:600;font-size:12px;margin-bottom:3px">${l.nombre||'Sin nombre'}</div>
+        <div style="font-size:10px;color:#64748b">${intencionLabel(l.intencion)}</div>
+        <div style="font-size:10px;color:#94a3b8;margin-top:4px">${l.asesor_nombre||'—'}</div>
+        ${tel ? `<a href="https://wa.me/52${tel.replace(/\D/g,'')}" target="_blank" onclick="event.stopPropagation()" style="font-size:9px;color:#15803d;font-weight:700">WA</a>` : ''}
+      </div>`;
+    }).join('') || '<div style="font-size:11px;color:#cbd5e1;padding:8px 4px;text-align:center">Vacío</div>';
+    const colors = { 'Nuevo':'#6366f1','En Proceso':'#f59e0b','Ganado':'#22c55e','Perdido':'#ef4444','Incompleto':'#94a3b8' };
+    return `<div class="kanban-col">
+      <div class="kanban-col-header" style="color:${colors[estado]}">${estado} <span style="background:${colors[estado]}22;color:${colors[estado]};border-radius:10px;padding:1px 7px">${items.length}</span></div>
+      ${cards}
+    </div>`;
+  }).join('');
 }
 
 async function editarLead(id) {
-  const l = allLeads.find(x => x.id === id);
-  if (!l) return;
-  document.getElementById('modal-lead-title').textContent = 'Editar lead — ' + (l.lid||'');
+  const full = await api(`/api/leads/${id}`);
+  if (!full) return;
+  const l = full;
+  document.getElementById('modal-lead-title').textContent = 'Lead — ' + (l.lid||'');
   document.getElementById('lead-id').value = id;
   document.getElementById('lead-nombre').value = l.nombre||'';
   document.getElementById('lead-tipo').value = l.tipo_usuario||'';
   document.getElementById('lead-telwa').value = l.telefono_wa ? l.telefono_wa.replace('@c.us','') : '';
   document.getElementById('lead-telc').value = l.telefono_contacto||'';
+  document.getElementById('lead-fuente').value = l.fuente||'manual';
   document.getElementById('lead-intencion').value = l.intencion||'';
   document.getElementById('lead-renta').value = l.renta||'';
   document.getElementById('lead-inmueble').value = l.tipo_inmueble||'';
@@ -1471,20 +1656,58 @@ async function editarLead(id) {
   document.getElementById('lead-estado').value = l.estado||'Nuevo';
   document.getElementById('lead-seguimiento').value = l.prox_seguimiento||'';
   document.getElementById('lead-plan').value = l.plan_vendido||'';
-  document.getElementById('lead-notas').value = l.notas||'';
+  document.getElementById('lead-notas').value = '';
   document.getElementById('lead-motivo').value = l.motivo_perdida||'';
   document.getElementById('motivo-group').style.display = l.estado === 'Perdido' ? '' : 'none';
+  // WA button
+  const telWA = l.telefono_wa ? l.telefono_wa.replace('@c.us','') : (l.telefono_contacto||'');
+  const waEl = document.getElementById('lead-wa-btn');
+  if (telWA && waEl) {
+    document.getElementById('lead-wa-link').href = `https://wa.me/52${telWA.replace(/\D/g,'')}`;
+    waEl.style.display = '';
+  } else if (waEl) waEl.style.display = 'none';
+  // Convert button (admin only)
+  const btnConv = document.getElementById('btn-convertir-exp');
+  if (btnConv) btnConv.style.display = (USER.rol === 'admin' && l.estado !== 'Ganado') ? '' : 'none';
   if (USER.rol === 'admin') await cargarAsesorSelect('lead-asesor', l.asesor_id);
+  // Timeline
+  const tSec = document.getElementById('lead-timeline-section');
+  tSec.style.display = '';
+  renderTimelineLead(l.notas_log || []);
+  document.getElementById('lead-notas-nueva').value = '';
   document.getElementById('modal-lead').classList.add('open');
+}
+
+function renderTimelineLead(notas) {
+  const c = document.getElementById('lead-timeline');
+  if (!notas.length) { c.innerHTML = '<p style="color:#94a3b8;font-size:11px;padding:4px 0">Sin actividad registrada</p>'; return; }
+  c.innerHTML = notas.map(n => `<div style="border-left:2px solid #e2e8f0;padding:6px 10px;margin-bottom:6px;background:#f8fafc;border-radius:0 6px 6px 0">
+    <div style="font-size:11px;color:#1a2d4a">${n.texto}</div>
+    <div style="font-size:9px;color:#94a3b8;margin-top:2px">${n.usuario_nombre} · ${fechaCorta(n.fecha)}</div>
+  </div>`).join('');
+  c.scrollTop = c.scrollHeight;
+}
+
+async function agregarNotaDesdeModal() {
+  const id = document.getElementById('lead-id').value;
+  if (!id) return;
+  const texto = document.getElementById('lead-notas-nueva').value.trim();
+  if (!texto) return;
+  const notas = await api(`/api/leads/${id}/notas`, { method:'POST', body: JSON.stringify({ texto }) });
+  if (notas) { renderTimelineLead(notas); document.getElementById('lead-notas-nueva').value = ''; }
 }
 
 function abrirNuevoLead() {
   document.getElementById('modal-lead-title').textContent = 'Nuevo lead';
   document.getElementById('lead-id').value = '';
-  ['lead-nombre','lead-telwa','lead-telc','lead-renta','lead-inmueble','lead-zona','lead-seguimiento','lead-plan','lead-notas','lead-motivo'].forEach(id => document.getElementById(id).value = '');
+  ['lead-nombre','lead-telwa','lead-telc','lead-renta','lead-inmueble','lead-zona','lead-seguimiento','lead-plan','lead-notas','lead-motivo','lead-notas-nueva'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   ['lead-tipo','lead-intencion'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('lead-fuente').value = 'manual';
   document.getElementById('lead-estado').value = 'Nuevo';
   document.getElementById('motivo-group').style.display = 'none';
+  const waEl = document.getElementById('lead-wa-btn'); if (waEl) waEl.style.display = 'none';
+  const btnConv = document.getElementById('btn-convertir-exp'); if (btnConv) btnConv.style.display = 'none';
+  document.getElementById('lead-timeline-section').style.display = 'none';
   if (USER.rol === 'admin') cargarAsesorSelect('lead-asesor');
   document.getElementById('modal-lead').classList.add('open');
 }
@@ -1495,7 +1718,6 @@ document.getElementById('lead-estado').addEventListener('change', function() {
 
 async function guardarLead() {
   const id = document.getElementById('lead-id').value;
-  const notaTexto = document.getElementById('lead-notas').value;
   const body = {
     tipo_usuario: document.getElementById('lead-tipo').value,
     intencion: document.getElementById('lead-intencion').value,
@@ -1506,17 +1728,14 @@ async function guardarLead() {
     prox_seguimiento: document.getElementById('lead-seguimiento').value,
     plan_vendido: document.getElementById('lead-plan').value,
     motivo_perdida: document.getElementById('lead-motivo').value,
-    fuente: 'manual',
+    fuente: document.getElementById('lead-fuente').value || 'manual',
   };
   if (!id) {
-    // Nuevo lead: incluir nombre, teléfono y nota inicial
     body.nombre = document.getElementById('lead-nombre').value;
     body.telefono_wa = document.getElementById('lead-telwa').value;
     body.telefono_contacto = document.getElementById('lead-telc').value;
-    if (notaTexto) body.notas = notaTexto;
-  } else {
-    // Editar: nota se agrega al log, nunca reemplaza
-    if (notaTexto) body.nota_nueva = notaTexto;
+    const nota = document.getElementById('lead-notas').value;
+    if (nota) body.notas = nota;
   }
   if (USER.rol === 'admin') body.asesor_id = document.getElementById('lead-asesor').value;
 
@@ -1532,11 +1751,36 @@ async function guardarLead() {
   }
   if (!resp.ok) { alert(data.error || 'Error al guardar'); return; }
   cerrarModal('modal-lead');
-  document.getElementById('lead-notas').value = '';
   cargarLeads();
 }
 
-// Ver notas históricas de un lead
+async function convertirLeadAExpediente() {
+  const id = document.getElementById('lead-id').value;
+  if (!id) return;
+  const l = allLeads.find(x => x.id == id) || await api(`/api/leads/${id}`);
+  if (!l) return;
+  cerrarModal('modal-lead');
+  // Marca el lead como Ganado
+  await api(`/api/leads/${id}`, { method:'PUT', body: JSON.stringify({ estado:'Ganado', nota_nueva:'Convertido a expediente' }) });
+  // Abre modal nuevo expediente (si existe la función)
+  if (typeof abrirNuevoExpediente === 'function') {
+    nav('expedientes');
+    setTimeout(() => {
+      abrirNuevoExpediente();
+      // Pre-fill known fields
+      const setV = (sel, val) => { const e = document.getElementById(sel); if (e && val) e.value = val; };
+      setV('exp-arrendatario', l.nombre);
+      setV('exp-tel-arrendatario', l.telefono_wa ? l.telefono_wa.replace('@c.us','') : l.telefono_contacto);
+      setV('exp-monto-renta', l.renta);
+      setV('exp-tipo-inmueble', l.tipo_inmueble);
+      setV('exp-zona', l.zona);
+      if (USER.rol === 'admin' && l.asesor_id) cargarAsesorSelect('exp-asesor', l.asesor_id);
+    }, 200);
+  }
+  cargarLeads();
+}
+
+// ── LEADS — notas modal (legacy, kept for compat) ──
 let _notasLeadId = null;
 async function verNotasLead(id, nombre) {
   _notasLeadId = id;
@@ -1729,10 +1973,12 @@ async function guardarGuardia() {
 }
 
 // ── HELPERS ──
-async function cargarAsesorSelect(selectId, selectedId) {
+async function cargarAsesorSelect(selectId, selectedId, placeholder) {
   const data = await api('/api/asesores');
   const sel = document.getElementById(selectId);
-  sel.innerHTML = '<option value="">— Selecciona —</option>' + (data||[]).filter(a=>a.activo).map(a => `<option value="${a.id}"${a.id==selectedId?' selected':''}>${a.nombre}</option>`).join('');
+  if (!sel) return;
+  const ph = placeholder || (selectId.includes('filter') ? 'Todos los asesores' : '— Selecciona —');
+  sel.innerHTML = `<option value="">${ph}</option>` + (data||[]).filter(a=>a.activo).map(a => `<option value="${a.id}"${a.id==selectedId?' selected':''}>${a.nombre}</option>`).join('');
 }
 
 function cerrarModal(id) { document.getElementById(id).classList.remove('open'); }
