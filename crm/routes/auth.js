@@ -21,6 +21,14 @@ r.post('/login', (req, res) => {
   res.json({ token, user: { id: u.id, nombre: u.nombre, email: u.email, rol: u.rol, folio: u.folio } });
 });
 
+// Admin impersona asesor
+r.post('/impersonate/:id', require('../auth').middleware, require('../auth').adminOnly, (req, res) => {
+  const u = db.prepare('SELECT * FROM usuarios WHERE id=? AND activo=1').get(req.params.id);
+  if (!u) return res.status(404).json({ error: 'Usuario no encontrado' });
+  const token = sign({ id: u.id, nombre: u.nombre, email: u.email, rol: u.rol, folio: u.folio });
+  res.json({ token, user: { id: u.id, nombre: u.nombre, email: u.email, rol: u.rol, folio: u.folio } });
+});
+
 // Configurar sobrecontraseña propia
 r.post('/sobre-password', require('../auth').middleware, (req, res) => {
   const { sobre_password } = req.body;

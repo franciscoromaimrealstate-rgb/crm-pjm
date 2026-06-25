@@ -322,6 +322,11 @@ tr:hover td{background:#f8fafc}
 </div>
 
 <div id="main">
+  <div id="impersonate-banner" style="display:none;background:#f59e0b;color:#fff;text-align:center;padding:7px 16px;font-size:12px;font-weight:600;position:sticky;top:0;z-index:200;display:flex;align-items:center;justify-content:center;gap:12px">
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span id="impersonate-label">Viendo como: —</span>
+    <button onclick="salirImpersonacion()" style="background:rgba(0,0,0,.2);border:none;color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:6px;cursor:pointer">✕ Volver a admin</button>
+  </div>
   <div id="topbar">
     <div id="page-title">Dashboard</div>
     <div class="topbar-right">
@@ -1869,6 +1874,7 @@ async function cargarAsesores() {
       <div class="asesor-actions">
         <button class="btn btn-ghost" style="font-size:11px;padding:5px 10px" onclick="editarAsesor(${a.id})">Editar</button>
         <button class="btn btn-ghost" style="font-size:11px;padding:5px 10px" onclick="cambiarPassword(${a.id},'${a.nombre}')">Contraseña</button>
+        <button class="btn btn-ghost" style="font-size:11px;padding:5px 10px;background:#fef3c7;border-color:#fde68a;color:#92400e" onclick="impersonar(${a.id},'${a.nombre.replace(/'/g,"\\'")}')">👁 Ver como</button>
       </div>
     </div>`;
   }).join('');
@@ -1901,6 +1907,47 @@ async function editarAsesor(id) {
   document.getElementById('asesor-rol').value = data.rol;
   document.getElementById('asesor-activo').value = data.activo ? '1' : '0';
   document.getElementById('modal-asesor').classList.add('open');
+}
+
+// ── IMPERSONACIÓN ──
+let _ADMIN_TOKEN = null;
+let _ADMIN_USER = null;
+
+async function impersonar(id, nombre) {
+  if (!confirm(`¿Ver el CRM como ${nombre}? Podrás volver a admin en cualquier momento.`)) return;
+  const resp = await fetch(`/api/auth/impersonate/${id}`, {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + TOKEN }
+  });
+  if (!resp.ok) { alert('No se pudo impersonar'); return; }
+  const data = await resp.json();
+  _ADMIN_TOKEN = TOKEN;
+  _ADMIN_USER = { ...USER };
+  TOKEN = data.token;
+  USER = data.user;
+  localStorage.setItem('crm_token', TOKEN);
+  localStorage.setItem('crm_user', JSON.stringify(USER));
+  // Banner
+  const banner = document.getElementById('impersonate-banner');
+  document.getElementById('impersonate-label').textContent = `Viendo como: ${nombre}`;
+  banner.style.display = 'flex';
+  // Ocultar elementos admin-only
+  document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+  nav('leads');
+}
+
+function salirImpersonacion() {
+  if (!_ADMIN_TOKEN) return;
+  TOKEN = _ADMIN_TOKEN;
+  USER = _ADMIN_USER;
+  _ADMIN_TOKEN = null;
+  _ADMIN_USER = null;
+  localStorage.setItem('crm_token', TOKEN);
+  localStorage.setItem('crm_user', JSON.stringify(USER));
+  document.getElementById('impersonate-banner').style.display = 'none';
+  // Restaurar elementos admin-only
+  document.querySelectorAll('.admin-only').forEach(el => el.style.display = '');
+  nav('asesores');
 }
 
 async function cambiarPassword(id, nombre) {
