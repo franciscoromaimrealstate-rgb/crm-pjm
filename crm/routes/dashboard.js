@@ -5,7 +5,7 @@ const { middleware } = require('../auth');
 const r = express.Router();
 r.use(middleware);
 
-r.get('/', (req, res) => {
+r.get('/', (req, res) => { try {
   const isAdmin = req.user.rol === 'admin';
   const uid = req.user.id;
   const fL = isAdmin ? '' : `AND asesor_id = ${uid}`;
@@ -37,8 +37,8 @@ r.get('/', (req, res) => {
 
   const leadsSinSeguimiento = db.prepare(`SELECT id,lid,nombre,asesor_nombre,estado,fecha,prox_seguimiento
     FROM leads WHERE estado NOT IN ('Ganado','Perdido')
-    AND (prox_seguimiento IS NULL OR prox_seguimiento='' OR prox_seguimiento < DATE('now'))
-    AND fecha < DATE('now','-3 days') ${fL}
+    AND (prox_seguimiento IS NULL OR prox_seguimiento='' OR prox_seguimiento < DATE('now','localtime'))
+    AND fecha < DATE('now','-3 days','localtime') ${fL}
     ORDER BY fecha ASC LIMIT 20`).all();
 
   // ── EXPEDIENTES / FINANCIERO ──
@@ -301,6 +301,7 @@ r.get('/', (req, res) => {
     // mi dash
     miDash
   });
+} catch(e) { console.error('[DASHBOARD ERROR]', e.message, e.stack?.split('\n')[1]); res.status(500).json({ error: e.message }); }
 });
 
 module.exports = r;
