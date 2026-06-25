@@ -828,7 +828,7 @@ tr:hover td{background:#f8fafc}
         </select>
       </div>
       <div class="form-group"><label class="form-label">Teléfono WhatsApp</label><input class="form-input" id="lead-telwa" placeholder="8121234567"></div>
-      <div class="form-group"><label class="form-label">Teléfono contacto</label><input class="form-input" id="lead-telc" placeholder="8121234567"></div>
+      <input type="hidden" id="lead-telc">
       <div class="form-group"><label class="form-label">Canal de contacto</label>
         <select class="form-input form-select" id="lead-fuente">
           <option value="manual">Manual</option>
@@ -867,10 +867,37 @@ tr:hover td{background:#f8fafc}
           <option value="Incompleto">Incompleto</option>
         </select>
       </div>
-      <div class="form-group"><label class="form-label">Próximo seguimiento</label><input class="form-input" id="lead-seguimiento" type="date"></div>
+      <!-- Seguimiento -->
+      <div class="form-group full" id="seguimiento-block">
+        <label class="form-label" style="display:flex;align-items:center;justify-content:space-between">
+          <span>Próximo seguimiento</span>
+          <span id="seg-badge" style="display:none"></span>
+        </label>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input class="form-input" id="lead-seguimiento" type="date" style="flex:1">
+          <button type="button" class="btn btn-ghost" style="font-size:11px;white-space:nowrap;padding:7px 12px" onclick="programarSeguimiento()">📅 Programar</button>
+        </div>
+        <div id="seguimientos-log" style="margin-top:8px;display:none"></div>
+      </div>
       <div class="form-group full"><label class="form-label">Plan vendido</label><input class="form-input" id="lead-plan" placeholder="Plan Básico, Plus, Premium..."></div>
       <div class="form-group full"><label class="form-label">Notas</label><textarea class="form-input" id="lead-notas" rows="2" placeholder="Observaciones..."></textarea></div>
-      <div class="form-group full" id="motivo-group" style="display:none"><label class="form-label">Motivo de pérdida</label><input class="form-input" id="lead-motivo" placeholder="¿Por qué se perdió?"></div>
+      <div class="form-group full" id="motivo-group" style="display:none">
+        <label class="form-label">Motivo de pérdida <span style="color:#ef4444">*</span></label>
+        <select class="form-input form-select" id="lead-motivo">
+          <option value="">— Selecciona motivo —</option>
+          <option value="precio">Precio / presupuesto</option>
+          <option value="no_responde">No contesta / no responde</option>
+          <option value="eligio_otro">Eligió otro proveedor</option>
+          <option value="no_califica">No califica</option>
+          <option value="desistio">Desistió del arrendamiento</option>
+          <option value="duplicado">Duplicado</option>
+          <option value="otro">Otro</option>
+        </select>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:8px;background:#fef3c7;border:1px solid #fde68a;border-radius:8px;padding:8px 12px">
+          <span style="font-size:11px;color:#92400e">¿Quieres intentar recuperarlo después?</span>
+          <button type="button" class="btn btn-ghost" style="font-size:11px;padding:4px 10px;margin-left:auto" onclick="programarRecuperacion()">📅 Agendar recuperación</button>
+        </div>
+      </div>
     </div>
     <!-- Timeline de notas (solo en edición) -->
     <div id="lead-timeline-section" style="display:none;margin-top:14px">
@@ -883,9 +910,8 @@ tr:hover td{background:#f8fafc}
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="cerrarModal('modal-lead')">Cancelar</button>
-      <button class="btn btn-ghost admin-only" id="btn-convertir-exp" style="display:none;background:#f0f4ff;color:#2563eb;border-color:#c7d7ff" onclick="convertirLeadAExpediente()">
-        ⚡ Convertir a expediente
-      </button>
+      <button class="btn btn-ghost" id="btn-recuperar-lead" style="display:none;background:#dcfce7;color:#15803d;border-color:#bbf7d0" onclick="recuperarLead()">♻️ Recuperar lead</button>
+      <button class="btn btn-ghost admin-only" id="btn-convertir-exp" style="display:none;background:#f0f4ff;color:#2563eb;border-color:#c7d7ff" onclick="convertirLeadAExpediente()">⚡ Convertir a expediente</button>
       <button class="btn btn-primary" onclick="guardarLead()">Guardar</button>
     </div>
   </div>
@@ -1564,17 +1590,19 @@ function limpiarFiltrosLeads() {
 function renderLeadsKpi(data) {
   const el = document.getElementById('leads-kpi-bar');
   if (!el) return;
-  const total = data.length;
-  const sinSeg = data.filter(l => diasSinActividad(l.updated_at||l.fecha) > 3 && l.estado !== 'Ganado' && l.estado !== 'Perdido').length;
-  const cal = data.filter(l => diasSinActividad(l.updated_at||l.fecha) < 1 && l.estado !== 'Ganado' && l.estado !== 'Perdido').length;
+  const activos = data.filter(l => l.estado !== 'Ganado' && l.estado !== 'Perdido');
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const vencidos = activos.filter(l => l.prox_seguimiento && new Date(l.prox_seguimiento+'T00:00:00') < hoy).length;
+  const paraHoy  = activos.filter(l => l.prox_seguimiento && new Date(l.prox_seguimiento+'T00:00:00').getTime() === hoy.getTime()).length;
+  const sinSeg   = activos.filter(l => !l.prox_seguimiento).length;
   const gan = data.filter(l => l.estado === 'Ganado').length;
-  el.innerHTML = `
-    <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:8px 14px;font-size:11px"><span style="font-weight:700;font-size:16px;color:#0a1f3c;display:block">${total}</span>Mostrando</div>
-      <div style="background:#fef3c7;border:1px solid #fde68a;border-radius:8px;padding:8px 14px;font-size:11px;color:#92400e"><span style="font-weight:700;font-size:16px;display:block">${sinSeg}</span>Sin seguimiento +3d</div>
-      <div style="background:#fee2e2;border:1px solid #fecaca;border-radius:8px;padding:8px 14px;font-size:11px;color:#dc2626"><span style="font-weight:700;font-size:16px;display:block">${cal}</span>Calientes hoy</div>
-      <div style="background:#dcfce7;border:1px solid #bbf7d0;border-radius:8px;padding:8px 14px;font-size:11px;color:#15803d"><span style="font-weight:700;font-size:16px;display:block">${gan}</span>Ganados</div>
-    </div>`;
+  el.innerHTML = `<div style="display:flex;gap:10px;flex-wrap:wrap">
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:8px 14px;font-size:11px"><span style="font-weight:700;font-size:16px;color:#0a1f3c;display:block">${data.length}</span>Total</div>
+    ${vencidos ? `<div style="background:#fee2e2;border:1px solid #fecaca;border-radius:8px;padding:8px 14px;font-size:11px;color:#dc2626;cursor:pointer" onclick="document.getElementById('filter-estado').value='';cargarLeads()"><span style="font-weight:700;font-size:16px;display:block">${vencidos}</span>⚠️ Seguimiento vencido</div>` : ''}
+    ${paraHoy  ? `<div style="background:#fef3c7;border:1px solid #fde68a;border-radius:8px;padding:8px 14px;font-size:11px;color:#92400e"><span style="font-weight:700;font-size:16px;display:block">${paraHoy}</span>📅 Seguimiento hoy</div>` : ''}
+    ${sinSeg   ? `<div style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;padding:8px 14px;font-size:11px;color:#475569"><span style="font-weight:700;font-size:16px;display:block">${sinSeg}</span>Sin fecha de seg.</div>` : ''}
+    <div style="background:#dcfce7;border:1px solid #bbf7d0;border-radius:8px;padding:8px 14px;font-size:11px;color:#15803d"><span style="font-weight:700;font-size:16px;display:block">${gan}</span>Ganados</div>
+  </div>`;
 }
 
 function renderLeads(data) {
@@ -1586,7 +1614,8 @@ function renderLeads(data) {
   if (!src.length) { tbody.innerHTML = `<tr><td colspan="12" style="text-align:center;padding:32px;color:#94a3b8;font-size:12px">Sin leads</td></tr>`; return; }
   tbody.innerHTML = src.map(l => {
     const tel = l.telefono_wa ? l.telefono_wa.replace('@c.us','') : (l.telefono_contacto||'');
-    const proxSeg = l.prox_seguimiento ? `<span style="font-size:10px;color:#0a1f3c">${l.prox_seguimiento}</span>` : '<span style="color:#cbd5e1;font-size:10px">—</span>';
+    const segI = l.prox_seguimiento && l.estado !== 'Ganado' && l.estado !== 'Perdido' ? segInfo(l.prox_seguimiento) : null;
+    const proxSeg = segI ? segI.badge : (l.prox_seguimiento ? `<span style="font-size:10px;color:#64748b">${l.prox_seguimiento}</span>` : '<span style="color:#cbd5e1;font-size:10px">—</span>');
     return `<tr>
       <td style="padding:8px 6px">${tempDot(l)}</td>
       <td style="font-size:10px;color:#94a3b8;font-weight:600">${l.lid||'—'}</td>
@@ -1644,9 +1673,8 @@ function renderKanban(data) {
 }
 
 async function editarLead(id) {
-  const full = await api(`/api/leads/${id}`);
-  if (!full) return;
-  const l = full;
+  const l = await api(`/api/leads/${id}`);
+  if (!l) return;
   document.getElementById('modal-lead-title').textContent = 'Lead — ' + (l.lid||'');
   document.getElementById('lead-id').value = id;
   document.getElementById('lead-nombre').value = l.nombre||'';
@@ -1663,22 +1691,45 @@ async function editarLead(id) {
   document.getElementById('lead-plan').value = l.plan_vendido||'';
   document.getElementById('lead-notas').value = '';
   document.getElementById('lead-motivo').value = l.motivo_perdida||'';
-  document.getElementById('motivo-group').style.display = l.estado === 'Perdido' ? '' : 'none';
+
+  const perdido = l.estado === 'Perdido';
+  const ganado  = l.estado === 'Ganado';
+  document.getElementById('motivo-group').style.display = perdido ? '' : 'none';
+  document.getElementById('seguimiento-block').style.display = (perdido || ganado) ? 'none' : '';
+
+  // Badge seguimiento
+  const segBadge = document.getElementById('seg-badge');
+  if (l.prox_seguimiento && !perdido && !ganado) {
+    const info = segInfo(l.prox_seguimiento);
+    segBadge.innerHTML = info.badge;
+    segBadge.style.display = '';
+  } else segBadge.style.display = 'none';
+
+  // Log de seguimientos previos
+  const notas = l.notas_log || [];
+  const segNotas = notas.filter(n => n.texto.startsWith('📅'));
+  const segLog = document.getElementById('seguimientos-log');
+  if (segNotas.length) {
+    segLog.style.display = '';
+    segLog.innerHTML = segNotas.map(n => `<div style="font-size:10px;color:#64748b;padding:3px 0;border-bottom:1px solid #f1f5f9">${n.texto} <span style="color:#94a3b8">· ${fechaCorta(n.fecha)}</span></div>`).join('');
+  } else segLog.style.display = 'none';
+
   // WA button
-  const telWA = l.telefono_wa ? l.telefono_wa.replace('@c.us','') : (l.telefono_contacto||'');
+  const tel = l.telefono_wa ? l.telefono_wa.replace('@c.us','') : (l.telefono_contacto||'');
   const waEl = document.getElementById('lead-wa-btn');
-  if (telWA && waEl) {
-    document.getElementById('lead-wa-link').href = `https://wa.me/52${telWA.replace(/\D/g,'')}`;
-    waEl.style.display = '';
-  } else if (waEl) waEl.style.display = 'none';
-  // Convert button (admin only)
+  if (tel && waEl) { document.getElementById('lead-wa-link').href = `https://wa.me/52${tel.replace(/\D/g,'')}`; waEl.style.display = ''; }
+  else if (waEl) waEl.style.display = 'none';
+
+  // Botones footer
+  document.getElementById('btn-recuperar-lead').style.display = perdido ? '' : 'none';
   const btnConv = document.getElementById('btn-convertir-exp');
-  if (btnConv) btnConv.style.display = (USER.rol === 'admin' && l.estado !== 'Ganado') ? '' : 'none';
+  if (btnConv) btnConv.style.display = (USER.rol === 'admin' && !ganado && !perdido) ? '' : 'none';
+
   if (USER.rol === 'admin') await cargarAsesorSelect('lead-asesor', l.asesor_id);
+
   // Timeline
-  const tSec = document.getElementById('lead-timeline-section');
-  tSec.style.display = '';
-  renderTimelineLead(l.notas_log || []);
+  document.getElementById('lead-timeline-section').style.display = '';
+  renderTimelineLead(notas);
   document.getElementById('lead-notas-nueva').value = '';
   document.getElementById('modal-lead').classList.add('open');
 }
@@ -1705,34 +1756,50 @@ async function agregarNotaDesdeModal() {
 function abrirNuevoLead() {
   document.getElementById('modal-lead-title').textContent = 'Nuevo lead';
   document.getElementById('lead-id').value = '';
-  ['lead-nombre','lead-telwa','lead-telc','lead-renta','lead-inmueble','lead-zona','lead-seguimiento','lead-plan','lead-notas','lead-motivo','lead-notas-nueva'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
-  ['lead-tipo','lead-intencion'].forEach(id => document.getElementById(id).value = '');
+  ['lead-nombre','lead-telwa','lead-telc','lead-renta','lead-inmueble','lead-zona','lead-seguimiento','lead-plan','lead-notas','lead-notas-nueva'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  ['lead-tipo','lead-intencion','lead-motivo'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   document.getElementById('lead-fuente').value = 'manual';
   document.getElementById('lead-estado').value = 'Nuevo';
   document.getElementById('motivo-group').style.display = 'none';
+  document.getElementById('seguimiento-block').style.display = '';
+  document.getElementById('seguimientos-log').style.display = 'none';
+  document.getElementById('seg-badge').style.display = 'none';
   const waEl = document.getElementById('lead-wa-btn'); if (waEl) waEl.style.display = 'none';
   const btnConv = document.getElementById('btn-convertir-exp'); if (btnConv) btnConv.style.display = 'none';
+  document.getElementById('btn-recuperar-lead').style.display = 'none';
   document.getElementById('lead-timeline-section').style.display = 'none';
   if (USER.rol === 'admin') cargarAsesorSelect('lead-asesor');
   document.getElementById('modal-lead').classList.add('open');
 }
 
 document.getElementById('lead-estado').addEventListener('change', function() {
-  document.getElementById('motivo-group').style.display = this.value === 'Perdido' ? '' : 'none';
+  const perdido = this.value === 'Perdido';
+  document.getElementById('motivo-group').style.display = perdido ? '' : 'none';
+  document.getElementById('seguimiento-block').style.display = (perdido || this.value === 'Ganado') ? 'none' : '';
 });
 
 async function guardarLead() {
   const id = document.getElementById('lead-id').value;
+  const estado = document.getElementById('lead-estado').value;
+  const motivo = document.getElementById('lead-motivo').value;
+
+  // Fuga #1: Perdido sin motivo
+  if (estado === 'Perdido' && !motivo) {
+    alert('⚠️ Selecciona el motivo de pérdida antes de guardar.');
+    document.getElementById('lead-motivo').focus();
+    return;
+  }
+
   const body = {
     tipo_usuario: document.getElementById('lead-tipo').value,
     intencion: document.getElementById('lead-intencion').value,
     renta: document.getElementById('lead-renta').value,
     tipo_inmueble: document.getElementById('lead-inmueble').value,
     zona: document.getElementById('lead-zona').value,
-    estado: document.getElementById('lead-estado').value,
+    estado,
     prox_seguimiento: document.getElementById('lead-seguimiento').value,
     plan_vendido: document.getElementById('lead-plan').value,
-    motivo_perdida: document.getElementById('lead-motivo').value,
+    motivo_perdida: motivo,
     fuente: document.getElementById('lead-fuente').value || 'manual',
   };
   if (!id) {
@@ -1741,6 +1808,17 @@ async function guardarLead() {
     body.telefono_contacto = document.getElementById('lead-telc').value;
     const nota = document.getElementById('lead-notas').value;
     if (nota) body.notas = nota;
+    // Fuga #2: nuevo lead sin seguimiento — auto-asignar mañana
+    if (!body.prox_seguimiento && estado !== 'Ganado' && estado !== 'Perdido') {
+      const manana = new Date(); manana.setDate(manana.getDate()+1);
+      body.prox_seguimiento = manana.toISOString().slice(0,10);
+    }
+  } else {
+    // Auto-log cambio de estado en timeline
+    const estadoAnterior = allLeads.find(x=>x.id==id)?.estado;
+    if (estadoAnterior && estadoAnterior !== estado) {
+      body.nota_nueva = `🔄 Estado: ${estadoAnterior} → ${estado}${motivo ? ' ('+motivo+')' : ''}`;
+    }
   }
   if (USER.rol === 'admin') body.asesor_id = document.getElementById('lead-asesor').value;
 
@@ -1750,11 +1828,80 @@ async function guardarLead() {
     body: JSON.stringify(body)
   });
   const data = await resp.json();
-  if (resp.status === 409 && data.error === 'duplicado') {
-    alert('⚠️ Duplicado:\n' + data.mensaje);
-    return;
-  }
+  if (resp.status === 409 && data.error === 'duplicado') { alert('⚠️ Duplicado:\n' + data.mensaje); return; }
   if (!resp.ok) { alert(data.error || 'Error al guardar'); return; }
+  cerrarModal('modal-lead');
+  cargarLeads();
+}
+
+// ── SEGUIMIENTOS ──
+function segInfo(fecha) {
+  if (!fecha) return null;
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const d = new Date(fecha + 'T00:00:00');
+  const diff = Math.floor((d - hoy) / 86400000);
+  if (diff < 0)  return { badge: `<span class="dias-badge dias-danger">VENCIDO ${Math.abs(diff)}d</span>`, color:'#dc2626' };
+  if (diff === 0) return { badge: `<span class="dias-badge dias-warn">HOY</span>`, color:'#f59e0b' };
+  if (diff <= 2)  return { badge: `<span class="dias-badge dias-ok">en ${diff}d</span>`, color:'#15803d' };
+  return { badge: `<span style="font-size:10px;color:#64748b">${fecha}</span>`, color:'#64748b' };
+}
+
+async function programarSeguimiento() {
+  const id = document.getElementById('lead-id').value;
+  const fecha = document.getElementById('lead-seguimiento').value;
+  if (!fecha) { alert('Selecciona una fecha de seguimiento'); return; }
+  if (!id) return; // nuevo lead — se guarda al crear
+
+  const texto = `📅 Seguimiento programado para: ${fecha}`;
+  await api(`/api/leads/${id}/notas`, { method:'POST', body: JSON.stringify({ texto }) });
+  // Guarda la fecha en el lead
+  await api(`/api/leads/${id}`, { method:'PUT', body: JSON.stringify({ prox_seguimiento: fecha }) });
+
+  // Actualiza badge y log en el modal sin cerrarlo
+  const info = segInfo(fecha);
+  const segBadge = document.getElementById('seg-badge');
+  segBadge.innerHTML = info.badge; segBadge.style.display = '';
+  // Refresca timeline
+  const notas = await api(`/api/leads/${id}/notas`);
+  if (notas) renderTimelineLead(notas);
+  const segNotas = (notas||[]).filter(n=>n.texto.startsWith('📅'));
+  const segLog = document.getElementById('seguimientos-log');
+  if (segNotas.length) {
+    segLog.style.display = '';
+    segLog.innerHTML = segNotas.map(n=>`<div style="font-size:10px;color:#64748b;padding:3px 0;border-bottom:1px solid #f1f5f9">${n.texto} <span style="color:#94a3b8">· ${fechaCorta(n.fecha)}</span></div>`).join('');
+  }
+  cargarLeads();
+}
+
+async function programarRecuperacion() {
+  const id = document.getElementById('lead-id').value;
+  if (!id) return;
+  const hoy = new Date(); hoy.setDate(hoy.getDate()+7);
+  const fecha = hoy.toISOString().slice(0,10);
+  document.getElementById('lead-seguimiento').value = fecha;
+  document.getElementById('lead-estado').value = 'En Proceso';
+  document.getElementById('motivo-group').style.display = 'none';
+  document.getElementById('seguimiento-block').style.display = '';
+  await api(`/api/leads/${id}`, { method:'PUT', body: JSON.stringify({
+    estado:'En Proceso',
+    prox_seguimiento: fecha,
+    nota_nueva: `♻️ Lead recuperado — seguimiento programado para: ${fecha}`
+  })});
+  cerrarModal('modal-lead');
+  cargarLeads();
+}
+
+async function recuperarLead() {
+  const id = document.getElementById('lead-id').value;
+  if (!id) return;
+  const hoy = new Date(); hoy.setDate(hoy.getDate()+1);
+  const fecha = hoy.toISOString().slice(0,10);
+  await api(`/api/leads/${id}`, { method:'PUT', body: JSON.stringify({
+    estado:'En Proceso',
+    motivo_perdida:'',
+    prox_seguimiento: fecha,
+    nota_nueva: `♻️ Lead reactivado desde Perdido — próximo seguimiento: ${fecha}`
+  })});
   cerrarModal('modal-lead');
   cargarLeads();
 }
